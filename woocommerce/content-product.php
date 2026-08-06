@@ -44,6 +44,10 @@ $clean_phone = preg_replace('/[^0-9]/', '', $phone);
 $wa_url = 'https://wa.me/' . $clean_phone . '?text=' . rawurlencode('Hola, me interesa consultar por el libro: ' . $title);
 ?>
 
+    <a href="<?php echo esc_url($link); ?>" class="refugios-product-card__media" aria-hidden="true" tabindex="-1">
+        <?php echo $product->get_image('refugios-book'); ?>
+    </a>
+
     <div class="refugios-product-card__content">
         <div class="refugios-product-card__cat"><?php echo wp_kses_post($cats); ?></div>
         

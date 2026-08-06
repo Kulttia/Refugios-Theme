@@ -159,6 +159,10 @@ if (!empty($featured_products)): ?>
         $wa_url = 'https://wa.me/' . $clean_phone . '?text=' . rawurlencode('Hola, me interesa consultar por el libro: ' . $title);
 ?>
 
+                            <a href="<?php echo esc_url($permalink); ?>" class="refugios-product-card__media" aria-hidden="true" tabindex="-1">
+                                <?php echo $product->get_image('refugios-book'); ?>
+                            </a>
+
                             <div class="refugios-product-card__content">
                                 <?php if ($category_list): ?>
                                     <div class="refugios-product-card__cat"><?php echo wp_kses_post($category_list); ?></div>
