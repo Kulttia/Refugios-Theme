@@ -804,3 +804,114 @@ function refugios_book_teaser($product, $words = 20)
     if ($long) return wp_trim_words($long, $words, '…');
     return 'El buen libro es de todos los siglos.';
 }
+
+/* =========================================================
+ 12. DESTACADOS DINÁMICOS DEL HOME
+ Cada mes se eligen solos: las novedades del catálogo
+ (lo último sincronizado desde Alegra) con mejor portada.
+ ========================================================= */
+
+function refugios_cron_schedules($schedules)
+{
+    $schedules['refugios_monthly'] = [
+        'interval' => 30 * DAY_IN_SECONDS,
+        'display' => __('Cada mes (Refugios)', 'refugios'),
+    ];
+    return $schedules;
+}
+add_filter('cron_schedules', 'refugios_cron_schedules');
+
+function refugios_schedule_featured_refresh()
+{
+    if (!wp_next_scheduled('refugios_refresh_featured')) {
+        wp_schedule_event(time() + HOUR_IN_SECONDS, 'refugios_monthly', 'refugios_refresh_featured');
+    }
+}
+add_action('init', 'refugios_schedule_featured_refresh');
+
+/**
+ * Área en píxeles de la imagen destacada: el criterio de "mejor calidad".
+ */
+function refugios_cover_area($product)
+{
+    $img_id = $product->get_image_id();
+    if (!$img_id) return 0;
+    $meta = wp_get_attachment_metadata($img_id);
+    if (empty($meta['width']) || empty($meta['height'])) return 0;
+    return (int) $meta['width'] * (int) $meta['height'];
+}
+
+/**
+ * Rota los destacados del Home: toma las últimas novedades publicadas,
+ * las ordena por calidad de portada y marca las 6 mejores como destacadas.
+ */
+function refugios_refresh_featured_books()
+{
+    if (!function_exists('wc_get_products')) return;
+
+    // Candidatas: las 40 novedades más recientes en la tienda
+    $recent = wc_get_products([
+        'status' => 'publish',
+        'limit' => 40,
+        'orderby' => 'date',
+        'order' => 'DESC',
+        'stock_status' => 'instock',
+    ]);
+    if (empty($recent)) return;
+
+    // Portada mínima decente (500x700); ordenadas por resolución real
+    $scored = [];
+    foreach ($recent as $p) {
+        $area = refugios_cover_area($p);
+        if ($area >= 500 * 700) {
+            $scored[] = ['product' => $p, 'area' => $area];
+        }
+    }
+    usort($scored, fn($a, $b) => $b['area'] <=> $a['area']);
+
+    $picks = array_slice(array_column($scored, 'product'), 0, 6);
+
+    // Si no alcanzan 6 con portada grande, completar con las novedades restantes con imagen
+    if (count($picks) < 6) {
+        $have = array_map(fn($p) => $p->get_id(), $picks);
+        foreach ($recent as $p) {
+            if (count($picks) >= 6) break;
+            if (!in_array($p->get_id(), $have, true) && $p->get_image_id()) {
+                $picks[] = $p;
+            }
+        }
+    }
+    if (empty($picks)) return;
+
+    // Quitar la marca a los destacados anteriores
+    foreach (wc_get_featured_product_ids() as $old_id) {
+        $old = wc_get_product($old_id);
+        if ($old) {
+            $old->set_featured(false);
+            $old->save();
+        }
+    }
+
+    // Marcar los nuevos
+    foreach ($picks as $p) {
+        $p->set_featured(true);
+        $p->save();
+    }
+
+    // La portada del Home cambió: vaciar la caché de LiteSpeed si está activa
+    if (has_action('litespeed_purge_all')) {
+        do_action('litespeed_purge_all');
+    }
+}
+add_action('refugios_refresh_featured', 'refugios_refresh_featured_books');
+
+// Disparo manual para administradores: /?refugios_rf=1 estando logueado
+function refugios_manual_featured_refresh()
+{
+    if (isset($_GET['refugios_rf']) && current_user_can('manage_options')) {
+        refugios_refresh_featured_books();
+        wp_safe_redirect(home_url('/'));
+        exit;
+    }
+}
+add_action('template_redirect', 'refugios_manual_featured_refresh');
