@@ -4,7 +4,7 @@ Theme URI: https://refugios.com
 Author: Kulttia Lab
 Author URI: https://kulttia.com/
 Description: Tema brutalista suizo-retro para Refugios, librería y cafetería especializada. Diseñado para WordPress + WooCommerce con Elementor.
-Version: 3.7.4
+Version: 3.8.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
@@ -7800,4 +7800,95 @@ a.add_to_wishlist i {
   content: none !important;
   display: none !important;
   border: none !important;
+}
+
+/* =============================================
+   v3.8.0 — CARDS TRANSACCIONALES
+   Comprar directo + WhatsApp para dudas
+   ============================================= */
+.refugios-product-card__actions {
+  display: flex !important;
+  gap: 0.5rem !important;
+  align-items: stretch !important;
+}
+
+.refugios-card-buy {
+  flex: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  background: var(--color-amber) !important;
+  color: var(--color-brown) !important;
+  border: 2px solid var(--color-brown) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  padding: 0.75rem 0.75rem !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 10;
+  transition: background 0.2s, color 0.2s, transform 0.1s, box-shadow 0.15s !important;
+}
+
+.refugios-card-buy:hover {
+  background: var(--color-brown) !important;
+  color: var(--color-cream) !important;
+  box-shadow: 3px 3px 0 var(--color-brown) !important;
+  transform: translate(-1px, -1px) !important;
+}
+
+/* Estado "agregado": Woo le pone .added y añade el link "Ver carrito" */
+.refugios-card-buy.added::after {
+  content: "✓";
+  margin-left: 0.25rem;
+}
+
+.refugios-card-buy.loading {
+  opacity: 0.6 !important;
+  pointer-events: none !important;
+}
+
+/* Enlace "Ver carrito" que Woo inserta tras agregar */
+.refugios-product-card__actions .added_to_cart {
+  position: absolute;
+  inset: auto 0 -1.6rem 0;
+  font-family: var(--font-sans) !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  color: var(--color-brown) !important;
+  text-align: center;
+  z-index: 10;
+}
+
+.refugios-card-wa {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.9rem !important;
+  min-width: 2.9rem !important;
+  background: var(--color-cream) !important;
+  color: var(--color-brown) !important;
+  border: 2px solid var(--color-brown) !important;
+  font-size: 1.15rem !important;
+  text-decoration: none !important;
+  position: relative;
+  z-index: 10;
+  transition: background 0.2s, color 0.2s !important;
+}
+
+.refugios-card-wa:hover {
+  background: #25d366 !important;
+  color: #fff !important;
+  border-color: var(--color-brown) !important;
+}
+
+/* El footer necesita espacio para el "Ver carrito" flotante */
+.refugios-product-card__footer {
+  position: relative;
+  padding-bottom: 0.25rem;
 }

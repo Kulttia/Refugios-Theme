@@ -174,9 +174,27 @@ if (!empty($featured_products)): ?>
 
                                 <div class="refugios-product-card__footer">
                                     <span class="refugios-product-card__price"><?php echo wp_kses_post($price); ?></span>
-                                    <a href="<?php echo esc_url($wa_url); ?>" class="refugios-product-card__btn-wa" target="_blank" rel="noopener">
-                                        <i class="fa-brands fa-whatsapp"></i> Consultar
-                                    </a>
+                                    <div class="refugios-product-card__actions">
+                                        <?php if ($product->is_type('simple') && $product->is_purchasable() && $product->is_in_stock()): ?>
+                                            <a href="<?php echo esc_url($product->add_to_cart_url()); ?>"
+                                               data-quantity="1"
+                                               data-product_id="<?php echo esc_attr($product_id); ?>"
+                                               class="refugios-card-buy add_to_cart_button ajax_add_to_cart"
+                                               rel="nofollow">
+                                                <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+                                                <?php esc_html_e('Comprar', 'refugios'); ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <a href="<?php echo esc_url($permalink); ?>" class="refugios-card-buy">
+                                                <?php esc_html_e('Ver libro', 'refugios'); ?>
+                                            </a>
+                                        <?php endif; ?>
+                                        <a href="<?php echo esc_url($wa_url); ?>" class="refugios-card-wa"
+                                           target="_blank" rel="noopener"
+                                           aria-label="<?php esc_attr_e('Consultar por WhatsApp', 'refugios'); ?>">
+                                            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
 

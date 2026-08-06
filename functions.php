@@ -117,6 +117,12 @@ function refugios_enqueue_assets()
     if (is_singular() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
     }
+
+    /* ---- "Comprar" con AJAX también en el Home (Woo solo lo carga en tienda) ---- */
+    if (is_front_page() && function_exists('WC')) {
+        wp_enqueue_script('wc-add-to-cart');
+        wp_enqueue_script('wc-cart-fragments');
+    }
 }
 add_action('wp_enqueue_scripts', 'refugios_enqueue_assets');
 
