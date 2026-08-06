@@ -7703,3 +7703,19 @@ a.add_to_wishlist i {
     min-height: 0;
   }
 }
+
+/* Blindaje: cualquier HTML que venga en la descripción corta hereda tipografía de la card */
+.refugios-product-card__desc h1,
+.refugios-product-card__desc h2,
+.refugios-product-card__desc h3,
+.refugios-product-card__desc h4,
+.refugios-product-card__desc strong,
+.refugios-product-card__desc em {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+  margin: 0 !important;
+  display: inline !important;
+}

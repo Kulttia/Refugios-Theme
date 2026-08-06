@@ -30,10 +30,8 @@ elseif (!$quote) {
     $quote = 'El buen libro es de todos los siglos.'; // Default
 }
 
-$desc = $product->get_short_description();
-if (!$desc) {
-    $desc = wp_trim_words($product->get_description(), 12, '...');
-}
+$desc = $product->get_short_description() ?: $product->get_description();
+$desc = wp_trim_words(wp_strip_all_tags($desc), 14, '...');
 
 // Categoria
 $cats = wc_get_product_category_list($product->get_id(), ', ');
@@ -58,7 +56,7 @@ $wa_url = 'https://wa.me/' . $clean_phone . '?text=' . rawurlencode('Hola, me in
         <div class="refugios-product-card__author"><?php echo esc_html($author); ?></div>
         
         <div class="refugios-product-card__desc">
-            <?php echo wp_kses_post($desc); ?>
+            <p><?php echo esc_html($desc); ?></p>
         </div>
 
         <div class="refugios-product-card__footer">
