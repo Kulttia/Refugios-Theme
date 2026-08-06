@@ -920,3 +920,197 @@ function refugios_manual_featured_refresh()
     }
 }
 add_action('template_redirect', 'refugios_manual_featured_refresh');
+
+/* =========================================================
+ 13. PORTADAS: RECORTE DE MARCOS BLANCOS
+ Muchas portadas llegan dentro de un lienzo blanco enorme.
+ Se recorta al área real solo si los 4 bordes son blanco
+ uniforme; una portada cuyo diseño es blanco no pasa esa
+ prueba (su arte llega hasta los bordes) y no se toca.
+ ========================================================= */
+
+/**
+ * ¿La fila/columna es blanca uniforme? Muestrea cada N píxeles.
+ */
+function refugios_scanline_is_white($img, $fixed, $length, $vertical, $tol = 242)
+{
+    $step = max(1, (int) ($length / 40));
+    for ($i = 0; $i < $length; $i += $step) {
+        $rgb = $vertical ? imagecolorat($img, $fixed, $i) : imagecolorat($img, $i, $fixed);
+        $r = ($rgb >> 16) & 0xFF;
+        $g = ($rgb >> 8) & 0xFF;
+        $b = $rgb & 0xFF;
+        if ($r < $tol || $g < $tol || $b < $tol) return false;
+    }
+    return true;
+}
+
+/**
+ * Recorta el marco blanco de un adjunto y regenera sus tamaños.
+ * Devuelve true si recortó.
+ */
+function refugios_trim_cover($attachment_id)
+{
+    if (!function_exists('imagecreatefromstring')) return false;
+    $path = get_attached_file($attachment_id);
+    if (!$path || !file_exists($path)) return false;
+
+    $data = file_get_contents($path);
+    $img = @imagecreatefromstring($data);
+    if (!$img) return false;
+
+    $w = imagesx($img);
+    $h = imagesy($img);
+    if ($w < 100 || $h < 100) { imagedestroy($img); return false; }
+
+    // Buscar límites del contenido no-blanco
+    $top = 0;
+    while ($top < $h - 1 && refugios_scanline_is_white($img, $top, $w, false)) $top++;
+    $bottom = $h - 1;
+    while ($bottom > $top && refugios_scanline_is_white($img, $bottom, $w, false)) $bottom--;
+    $left = 0;
+    while ($left < $w - 1 && refugios_scanline_is_white($img, $left, $h, true)) $left++;
+    $right = $w - 1;
+    while ($right > $left && refugios_scanline_is_white($img, $right, $h, true)) $right--;
+
+    $cw = $right - $left + 1;
+    $ch = $bottom - $top + 1;
+
+    // Solo vale la pena si el marco es real: contenido entre 10% y 88% del área
+    $ratio = ($cw * $ch) / ($w * $h);
+    if ($ratio > 0.88 || $ratio < 0.10 || $cw < 80 || $ch < 80) {
+        imagedestroy($img);
+        return false;
+    }
+
+    // Respiro del 2% alrededor del contenido
+    $pad = (int) round(max($cw, $ch) * 0.02);
+    $left = max(0, $left - $pad);
+    $top = max(0, $top - $pad);
+    $cw = min($w - $left, $cw + 2 * $pad);
+    $ch = min($h - $top, $ch + 2 * $pad);
+
+    $crop = imagecrop($img, ['x' => $left, 'y' => $top, 'width' => $cw, 'height' => $ch]);
+    imagedestroy($img);
+    if (!$crop) return false;
+
+    $saved = preg_match('/\.png$/i', $path)
+        ? imagepng($crop, $path, 9)
+        : imagejpeg($crop, $path, 88);
+    imagedestroy($crop);
+    if (!$saved) return false;
+
+    // Regenerar todos los tamaños derivados
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+    wp_update_attachment_metadata($attachment_id, wp_generate_attachment_metadata($attachment_id, $path));
+    return true;
+}
+
+/** Portadas nuevas del sync: recorte automático al subirse a un producto. */
+function refugios_trim_on_upload($attachment_id)
+{
+    $parent = get_post_parent($attachment_id);
+    if ($parent && $parent->post_type === 'product' && wp_attachment_is_image($attachment_id)) {
+        refugios_trim_cover($attachment_id);
+    }
+}
+add_action('add_attachment', 'refugios_trim_on_upload', 20);
+
+/**
+ * Pasada manual sobre portadas existentes (admins):
+ * /?refugios_trim=1&offset=0 — procesa 40 por llamada y enlaza la siguiente.
+ */
+function refugios_manual_trim_pass()
+{
+    if (!isset($_GET['refugios_trim']) || !current_user_can('manage_options')) return;
+
+    $offset = max(0, (int) ($_GET['offset'] ?? 0));
+    $batch = 40;
+    $products = get_posts([
+        'post_type' => 'product',
+        'post_status' => 'any',
+        'numberposts' => $batch,
+        'offset' => $offset,
+        'fields' => 'ids',
+        'orderby' => 'ID',
+        'order' => 'ASC',
+    ]);
+
+    $trimmed = 0;
+    foreach ($products as $pid) {
+        $thumb = get_post_thumbnail_id($pid);
+        if ($thumb && refugios_trim_cover($thumb)) $trimmed++;
+    }
+
+    $next = count($products) === $batch
+        ? home_url('/?refugios_trim=1&offset=' . ($offset + $batch))
+        : null;
+
+    if (!$next && has_action('litespeed_purge_all')) do_action('litespeed_purge_all');
+
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<p>Revisados ' . count($products) . ' productos (offset ' . $offset . '), recortadas ' . $trimmed . ' portadas.</p>';
+    echo $next
+        ? '<p><a href="' . esc_url($next) . '">Continuar con el siguiente lote →</a></p>'
+        : '<p><strong>Pasada completa.</strong> Caché purgada.</p>';
+    exit;
+}
+add_action('template_redirect', 'refugios_manual_trim_pass');
+
+/* =========================================================
+ 14. MEDIOS: REPORTE Y LIMPIEZA DE IMÁGENES HUÉRFANAS
+ Huérfana = adjunta a un producto pero ya no es su portada
+ ni parte de su galería (quedó atrás al reemplazar portadas).
+ El borrado es definitivo y SOLO corre si el admin lo
+ confirma con el enlace.
+ ========================================================= */
+
+function refugios_orphan_media_ids()
+{
+    $orphans = [];
+    $attachments = get_posts([
+        'post_type' => 'attachment',
+        'post_mime_type' => 'image',
+        'post_status' => 'inherit',
+        'numberposts' => -1,
+        'fields' => 'id=>parent',
+    ]);
+    foreach ($attachments as $att_id => $parent_id) {
+        if (!$parent_id) continue;
+        $parent = get_post($parent_id);
+        if (!$parent || $parent->post_type !== 'product') continue;
+        $thumb = (int) get_post_thumbnail_id($parent_id);
+        $gallery = array_map('intval', array_filter(explode(',', (string) get_post_meta($parent_id, '_product_image_gallery', true))));
+        if ((int) $att_id !== $thumb && !in_array((int) $att_id, $gallery, true)) {
+            $orphans[] = (int) $att_id;
+        }
+    }
+    return $orphans;
+}
+
+function refugios_media_cleanup()
+{
+    if (!isset($_GET['refugios_media_report']) || !current_user_can('manage_options')) return;
+
+    $orphans = refugios_orphan_media_ids();
+    header('Content-Type: text/html; charset=utf-8');
+
+    if (isset($_GET['confirm']) && $_GET['confirm'] === '1') {
+        $deleted = 0;
+        foreach (array_slice($orphans, 0, 150) as $att_id) {
+            if (wp_delete_attachment($att_id, true)) $deleted++;
+        }
+        $rest = count($orphans) - $deleted;
+        echo '<p>Eliminadas ' . $deleted . ' imágenes huérfanas.</p>';
+        echo $rest > 0
+            ? '<p><a href="' . esc_url(home_url('/?refugios_media_report=1&confirm=1')) . '">Quedan ' . $rest . ' — continuar →</a></p>'
+            : '<p><strong>Biblioteca limpia.</strong></p>';
+        exit;
+    }
+
+    echo '<p>Imágenes huérfanas de productos (reemplazadas, sin uso): <strong>' . count($orphans) . '</strong></p>';
+    echo '<p>Esto las borra DEFINITIVAMENTE de la biblioteca. ';
+    echo '<a href="' . esc_url(home_url('/?refugios_media_report=1&confirm=1')) . '">Confirmar borrado →</a></p>';
+    exit;
+}
+add_action('template_redirect', 'refugios_media_cleanup');
