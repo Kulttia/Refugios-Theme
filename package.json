@@ -1,0 +1,19 @@
+{
+  "name": "refugios-theme",
+  "version": "3.4.0",
+  "description": "Tema WordPress brutalista para Refugios — librería y cafetería",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i assets/css/tailwind.src.css -o assets/css/tailwind.min.css --minify",
+    "watch:css": "tailwindcss -i assets/css/tailwind.src.css -o assets/css/tailwind.min.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kulttia/Refugios-Theme.git"
+  },
+  "author": "Kulttia Lab",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

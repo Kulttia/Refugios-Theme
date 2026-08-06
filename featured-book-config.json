@@ -1,0 +1,42 @@
+{
+  "product_slug": "la-ultima-niebla-la-amortajada",
+  "product_id": 0,
+  "author_name": "María Luisa Bombal",
+  "book_title": "La última niebla / La amortajada",
+  "hero": {
+    "label": "Libro Destacado del Mes",
+    "title": "María Luisa Bombal",
+    "subtitle": "La madre del realismo mágico latinoamericano, admirada por Borges, Carlos Fuentes y García Márquez.",
+    "intro": "Las mujeres que formaron parte del boom latinoamericano a menudo quedaron invisibilizadas por sus compañeros escritores. María Luisa Bombal es considerada la madre del realismo mágico y una reconocida influencia en Juan Rulfo. En su obra se vale tanto de lo realista como de lo sobrenatural para explorar el mundo interior femenino, especialmente el deseo, en el contexto de la sociedad patriarcal de su tiempo.",
+    "cover_image": "assets/bombal-cover.jpg"
+  },
+  "chapters": [
+    {
+      "id": "amores-fallidos",
+      "title": "Amores fallidos y el disparo en el Hotel Crillón",
+      "content": "La vida amorosa de María Luisa Bombal parece salida de una novela gótica o de un melodrama trágico. Su gran y primer amor obsesivo fue Eulogio Sánchez Errázuriz, un hombre de la alta sociedad chilena, pionero de la aviación civil y adinerado. Eulogio la cortejó intensamente en París, pero al regresar a Chile la relación se enfrió. Él la esquivaba y, finalmente, se casó con otra mujer, lo que sumió a María Luisa en una profunda depresión (un dolor que inspiró la genial y asfixiante atmósfera de desamor de <em>La última niebla</em>).\n\nLa obsesión y el despecho escalaron a niveles cinematográficos. El 26 de enero de 1941, María Luisa esperó a Eulogio Sánchez a las afueras del emblemático Hotel Crillón en Santiago de Chile. Cuando lo vio salir, sacó un revólver de su cartera y le disparó tres veces. Eulogio sobrevivió al atentado y, en un acto de caballerosidad de la época o para evitar un escándalo mayor, retiró los cargos y la perdonó. Bombal pasó unos meses en prisión y luego se exilió en Estados Unidos para escapar del estigma social.",
+      "image": "assets/bombal-portrait.jpg",
+      "image_position": "left"
+    },
+    {
+      "id": "relacion-alcohol",
+      "title": "Su tormentosa relación con el alcohol",
+      "content": "El alcohol fue el refugio constante de María Luisa Bombal ante la soledad, el desarraigo y sus fantasmas emocionales. Durante sus años en Nueva York y, de manera mucho más severa, tras su regreso definitivo a Chile, su alcoholismo se agudizó. Vivía de pensión en pensión, muchas veces en la precariedad física y económica.\n\nQuienes la conocieron en sus últimos años recuerdan a una mujer de una lucidez poética abrumadora, pero consumida por el whisky y el olvido institucional. Falleció en Santiago a causa de los estragos de esta adicción (una insuficiencia hepática), prácticamente sola en una cama de hospital, rodeada de sus fantasmas pero dueña de una de las prosas más bellas de América.",
+      "image": "assets/bombal-reading.jpg",
+      "image_position": "right"
+    },
+    {
+      "id": "amistad-grandes",
+      "title": "Amistad con los grandes y \"La madre de todos nosotros\"",
+      "content": "A pesar de su trágico destino personal, su genialidad literaria la rodeó de los intelectuales más brillantes del siglo XX:\n\n<strong>Convivencia con Neruda:</strong> En Buenos Aires, durante la década de 1930, compartió departamento con el mismísimo Pablo Neruda. Neruda, fascinado por su talento, la apodó cariñosamente \"La Abeja de Fuego\". Fue en la mesa de la cocina de ese apartamento donde ella escribió <em>La última niebla</em>.\n\n<strong>El elogio de Borges:</strong> Fue íntima amiga de Jorge Luis Borges, quien fue uno de los primeros en reconocer públicamente que la prosa de Bombal estaba revolucionando el idioma castellano.\n\n<strong>Pionera del Realismo Mágico:</strong> Décadas antes de que estallara el Boom latinoamericano, María Luisa Bombal ya estaba rompiendo las reglas del realismo plano. En <em>La amortajada</em> (1938), la protagonista habla desde la muerte y siente la tierra; esta estructura exacta e innovación estética fue la influencia directa y confesada que inspiró a Juan Rulfo para escribir su obra cumbre, <em>Pedro Páramo</em> (1955).\n\nPor esta razón, figuras de la talla de Carlos Fuentes se referían a ella con absoluta devoción literaria llamándola \"la madre de todos nosotros\". Ella sembró la semilla poética y el tratamiento de los muertos y los mitos que luego cosecharían García Márquez, Rulfo y el resto de los autores del Boom.",
+      "image": "assets/bombal-borges.jpg",
+      "image_position": "left"
+    }
+  ],
+  "cta": {
+    "title": "La edición definitiva que merece un puesto de honor",
+    "description": "La presente edición recoge toda la obra narrativa de Bombal (las novelas cortas <em>La última niebla</em> y <em>La amortajada</em>, y los relatos «El árbol», «Trenzas», «Lo secreto», «Las islas nuevas» y «La historia de María Griselda») en una edición definitiva con portada e ilustraciones interiores de Paula Bonet y textos de Borges, Lucia Guerra y Pepe Bianco que arrojan luz sobre una escritora de vida y obra fascinantes.",
+    "button_text": "Llevarme la historia a casa",
+    "icon": "fa-solid fa-basket-shopping"
+  }
+}

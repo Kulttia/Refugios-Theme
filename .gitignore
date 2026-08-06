@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+
+# Herramientas locales / análisis
+graphify-out/
+_patch_*.ps1
+
+# Mockups HTML de diseño (solo referencia local, no van al tema)
+carrito.html
+checkout.html
+checkout2.html
+faq.html
+libros-leidos.html
+ll.html
+m.html
+pe.html
+qs.html
+
+# Sistema
+.DS_Store
+Thumbs.db

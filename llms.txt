@@ -1,0 +1,20 @@
+# Refugios — Librería & Café de Especialidad
+> Librería independiente y café de especialidad ubicada en Itagüí, Antioquia, Colombia. Comunidad lectora, libros curados y café de origen.
+
+## Páginas principales
+- [Inicio](https://refugios.co/)
+- [Tienda](https://refugios.co/tienda/)
+- [Blog](https://refugios.co/blog/)
+- [Quiénes Somos](https://refugios.co/quienes-somos/)
+- [Contacto](https://refugios.co/contacto/)
+
+## Contacto
+- Email: administracion@refugios.co
+- Teléfono: +57 323 811 39 85
+- Dirección: Calle 51 # 48-53, Centro Comercial La Gran Manzana, Itagüí, Antioquia, Colombia
+- Horario: Lunes a Sábado 10:00–19:00
+
+## Redes sociales
+- Instagram: https://www.instagram.com/refugios.co/
+- Facebook: https://www.facebook.com/libreriarefugios
+- TikTok: https://www.tiktok.com/@refugios.co
