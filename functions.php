@@ -932,15 +932,24 @@ add_action('template_redirect', 'refugios_manual_featured_refresh');
 /**
  * ¿La fila/columna es blanca uniforme? Muestrea cada N píxeles.
  */
-function refugios_scanline_is_white($img, $fixed, $length, $vertical, $tol = 242)
+function refugios_scanline_is_white($img, $fixed, $length, $vertical, $tol = 238)
 {
+    // Tolerante a ruido JPEG: hasta 5% de muestras impuras siguen contando
+    // como línea blanca (sombras fantasma de 1px arruinaban la detección).
     $step = max(1, (int) ($length / 40));
+    $bad = 0;
+    $total = 0;
+    $maxBad = 2;
     for ($i = 0; $i < $length; $i += $step) {
+        $total++;
         $rgb = $vertical ? imagecolorat($img, $fixed, $i) : imagecolorat($img, $i, $fixed);
         $r = ($rgb >> 16) & 0xFF;
         $g = ($rgb >> 8) & 0xFF;
         $b = $rgb & 0xFF;
-        if ($r < $tol || $g < $tol || $b < $tol) return false;
+        if ($r < $tol || $g < $tol || $b < $tol) {
+            $bad++;
+            if ($bad > $maxBad) return false;
+        }
     }
     return true;
 }
