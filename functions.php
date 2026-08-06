@@ -715,10 +715,14 @@ function refugios_seo_head() {
                         ],
                     ],
                     [
-                        '@type'       => 'Product',
+                        // Product + Book: elegible para resultados enriquecidos
+                        // de libros (autor/ISBN) además de los de producto.
+                        '@type'       => ['Product', 'Book'],
                         '@id'         => get_permalink() . '#product',
                         'name'        => get_the_title(),
-                        'description' => wp_strip_all_tags($product->get_short_description()),
+                        'author'      => ['@type' => 'Person', 'name' => refugios_get_product_author($product)],
+                        'isbn'        => $product->get_sku(),
+                        'description' => wp_strip_all_tags($product->get_description() ?: $product->get_short_description()),
                         'sku'         => $product->get_sku(),
                         'image'       => get_the_post_thumbnail_url($post->ID, 'full') ?: '',
                         'offers'      => [
@@ -1175,3 +1179,71 @@ function refugios_media_cleanup()
     exit;
 }
 add_action('template_redirect', 'refugios_media_cleanup');
+
+/* =========================================================
+ 15. CONVERSIÓN — CONFIANZA, META DESCRIPTIONS Y SCHEMA BOOK
+ ========================================================= */
+
+/**
+ * Franja de confianza bajo el botón de compra del producto:
+ * métodos de pago reales de la tienda + envíos. Lo que más pesa
+ * en la decisión de primera compra en Colombia.
+ */
+function refugios_trust_strip()
+{
+    ?>
+    <div class="refugios-trust">
+        <div class="refugios-trust__item">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <span><strong><?php esc_html_e('Pago 100% seguro', 'refugios'); ?></strong> · Wompi · Bancolombia</span>
+        </div>
+        <div class="refugios-trust__item">
+            <i class="fa-regular fa-credit-card" aria-hidden="true"></i>
+            <span><?php esc_html_e('Todas las tarjetas · Addi · Sistecrédito · PSE', 'refugios'); ?></span>
+        </div>
+        <div class="refugios-trust__item">
+            <i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
+            <span><?php esc_html_e('Envíos a toda Colombia desde nuestra librería en Itagüí', 'refugios'); ?></span>
+        </div>
+    </div>
+    <?php
+}
+add_action('woocommerce_single_product_summary', 'refugios_trust_strip', 35);
+
+/**
+ * Meta description: nunca la ficha técnica. Si RankMath no tiene una
+ * descripción editada a mano, se arma con el inicio de la descripción
+ * real del libro (la reescrita con IA).
+ */
+function refugios_meta_description($description)
+{
+    if (!is_singular('product')) return $description;
+
+    $is_junk = !$description
+        || refugios_text_is_technical($description)
+        || mb_strlen(trim($description)) < 40;
+    if (!$is_junk) return $description;
+
+    $product = wc_get_product(get_the_ID());
+    if (!$product) return $description;
+
+    $body = wp_strip_all_tags($product->get_description());
+    if (!$body || mb_strlen($body) < 40) return $description;
+
+    $meta = mb_substr($body, 0, 158);
+    // Cortar en la última palabra completa
+    $cut = mb_strrpos($meta, ' ');
+    if ($cut !== false && $cut > 100) $meta = mb_substr($meta, 0, $cut);
+    return trim($meta) . '…';
+}
+add_filter('rank_math/frontend/description', 'refugios_meta_description', 20);
+
+/**
+ * Schema de producto enriquecido para libros: Product + Book con autor
+ * e ISBN (resultados enriquecidos específicos de libros en Google).
+ * Extiende el JSON-LD que ya emite refugios_seo_head.
+ */
+function refugios_book_schema_filter($schema)
+{
+    return $schema; // reservado: el JSON-LD se ajusta directo en refugios_seo_head
+}
