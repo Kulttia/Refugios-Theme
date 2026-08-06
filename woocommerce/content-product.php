@@ -43,7 +43,7 @@ $wa_url = 'https://wa.me/' . $clean_phone . '?text=' . rawurlencode('Hola, me in
 ?>
 
     <a href="<?php echo esc_url($link); ?>" class="refugios-product-card__media" aria-hidden="true" tabindex="-1">
-        <?php echo $product->get_image('refugios-book'); ?>
+        <?php echo $product->get_image('large'); ?>
     </a>
 
     <div class="refugios-product-card__content">

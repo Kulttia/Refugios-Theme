@@ -160,7 +160,7 @@ if (!empty($featured_products)): ?>
 ?>
 
                             <a href="<?php echo esc_url($permalink); ?>" class="refugios-product-card__media" aria-hidden="true" tabindex="-1">
-                                <?php echo $product->get_image('refugios-book'); ?>
+                                <?php echo $product->get_image('large'); ?>
                             </a>
 
                             <div class="refugios-product-card__content">
