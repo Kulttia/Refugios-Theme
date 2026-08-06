@@ -766,3 +766,41 @@ function refugios_seo_head() {
     }
 }
 add_action('wp_head', 'refugios_seo_head', 5);
+
+/**
+ * ¿El texto es ficha técnica y no una provocación de lectura?
+ * (páginas, tapa, encuadernación, colección…). Se usa para decidir qué mostrar
+ * en las cards: la ficha técnica nunca invita a leer.
+ */
+function refugios_text_is_technical($text)
+{
+    if (!$text) return true;
+    return (bool) preg_match(
+        '/p[aá]ginas?\s*[:\d]|tapa\s+(blanda|dura)|encuadernaci[oó]n|colecci[oó]n\s*:|formato\s*:|isbn|n[°º]\s*p[aá]ginas/iu',
+        $text
+    );
+}
+
+/**
+ * Provocación del libro para la card y la cita flotante: primero el atributo
+ * "frase", luego la descripción larga; la descripción corta solo si no es
+ * ficha técnica. Nunca "Páginas: 48, Tapa blanda".
+ */
+function refugios_book_teaser($product, $words = 20)
+{
+    $frase = $product->get_attribute('frase');
+    if ($frase) return $frase;
+
+    $long = wp_strip_all_tags($product->get_description());
+    if ($long && !refugios_text_is_technical(mb_substr($long, 0, 80))) {
+        return wp_trim_words($long, $words, '…');
+    }
+
+    $short = wp_strip_all_tags($product->get_short_description());
+    if ($short && !refugios_text_is_technical($short)) {
+        return wp_trim_words($short, $words, '…');
+    }
+
+    if ($long) return wp_trim_words($long, $words, '…');
+    return 'El buen libro es de todos los siglos.';
+}

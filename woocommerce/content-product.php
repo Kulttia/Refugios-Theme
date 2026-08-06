@@ -20,18 +20,9 @@ $price = $product->get_price_html();
 // Attempt to get an author from a WooCommerce product attribute named 'autor' or 'pa_autor'
 $author = refugios_get_product_author($product);
 
-// Attempt to get a quote from 'frase'
-$quote = $product->get_attribute('frase');
-if (!$quote && $product->get_short_description()) {
-    $quote = wp_strip_all_tags($product->get_short_description());
-    $quote = wp_trim_words($quote, 15, '...');
-}
-elseif (!$quote) {
-    $quote = 'El buen libro es de todos los siglos.'; // Default
-}
-
-$desc = $product->get_short_description() ?: $product->get_description();
-$desc = wp_trim_words(wp_strip_all_tags($desc), 14, '...');
+// Provocación de lectura: frase → descripción larga; nunca la ficha técnica
+$quote = refugios_book_teaser($product, 20);
+$desc = refugios_book_teaser($product, 14);
 
 // Categoria
 $cats = wc_get_product_category_list($product->get_id(), ', ');

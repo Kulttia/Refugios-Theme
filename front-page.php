@@ -141,16 +141,9 @@ if (!empty($featured_products)): ?>
                             <?php
         $author = refugios_get_product_author($product);
 
-        $quote = $product->get_attribute('frase');
-        if (!$quote && $product->get_short_description()) {
-            $quote = wp_trim_words(wp_strip_all_tags($product->get_short_description()), 15, '...');
-        }
-        elseif (!$quote) {
-            $quote = 'El buen libro es de todos los siglos.';
-        }
-
-        $desc = $product->get_short_description() ?: $product->get_description();
-        $desc = wp_trim_words(wp_strip_all_tags($desc), 12, '...');
+        // Provocación de lectura: frase → descripción larga; nunca la ficha técnica
+        $quote = refugios_book_teaser($product, 20);
+        $desc = refugios_book_teaser($product, 12);
 
         $category_list = wc_get_product_category_list($product_id, ', ');
 
