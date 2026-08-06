@@ -25,6 +25,7 @@ function refugios_setup()
     ]);
     add_theme_support('woocommerce', [
         'thumbnail_image_width' => 600,
+        'single_image_width' => 800,
         'gallery_thumbnail_image_width' => 150,
     ]);
     add_theme_support('wc-product-gallery-zoom');
@@ -788,20 +789,18 @@ function refugios_text_is_technical($text)
  */
 function refugios_book_teaser($product, $words = 20)
 {
+    // Un teaser de menos de 25 caracteres no provoca nada ("Alma", "N/A"…)
+    $usable = fn($t) => $t && mb_strlen(trim($t)) >= 25 && !refugios_text_is_technical(mb_substr($t, 0, 80));
+
     $frase = $product->get_attribute('frase');
-    if ($frase) return $frase;
+    if ($frase && mb_strlen(trim($frase)) >= 10) return $frase;
 
     $long = wp_strip_all_tags($product->get_description());
-    if ($long && !refugios_text_is_technical(mb_substr($long, 0, 80))) {
-        return wp_trim_words($long, $words, '…');
-    }
+    if ($usable($long)) return wp_trim_words($long, $words, '…');
 
     $short = wp_strip_all_tags($product->get_short_description());
-    if ($short && !refugios_text_is_technical($short)) {
-        return wp_trim_words($short, $words, '…');
-    }
+    if ($usable($short)) return wp_trim_words($short, $words, '…');
 
-    if ($long) return wp_trim_words($long, $words, '…');
     return 'El buen libro es de todos los siglos.';
 }
 
