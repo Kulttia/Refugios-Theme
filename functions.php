@@ -1102,6 +1102,20 @@ add_action('template_redirect', 'refugios_manual_trim_pass');
 
 function refugios_orphan_media_ids()
 {
+    // Conjunto de imágenes realmente en uso por productos (portada + galería)
+    $used = [];
+    $products = get_posts([
+        'post_type' => 'product', 'post_status' => 'any',
+        'numberposts' => -1, 'fields' => 'ids',
+    ]);
+    foreach ($products as $pid) {
+        $t = (int) get_post_thumbnail_id($pid);
+        if ($t) $used[$t] = true;
+        foreach (array_filter(explode(',', (string) get_post_meta($pid, '_product_image_gallery', true))) as $g) {
+            $used[(int) $g] = true;
+        }
+    }
+
     $orphans = [];
     $attachments = get_posts([
         'post_type' => 'attachment',
@@ -1111,14 +1125,20 @@ function refugios_orphan_media_ids()
         'fields' => 'id=>parent',
     ]);
     foreach ($attachments as $att_id => $parent_id) {
-        if (!$parent_id) continue;
-        $parent = get_post($parent_id);
-        if (!$parent || $parent->post_type !== 'product') continue;
-        $thumb = (int) get_post_thumbnail_id($parent_id);
-        $gallery = array_map('intval', array_filter(explode(',', (string) get_post_meta($parent_id, '_product_image_gallery', true))));
-        if ((int) $att_id !== $thumb && !in_array((int) $att_id, $gallery, true)) {
-            $orphans[] = (int) $att_id;
+        $att_id = (int) $att_id;
+        if (isset($used[$att_id])) continue;
+
+        if ($parent_id) {
+            // Adjunta a un producto pero ya no es su portada ni galería
+            $parent = get_post($parent_id);
+            if ($parent && $parent->post_type === 'product') $orphans[] = $att_id;
+            continue;
         }
+
+        // Sin adjuntar: solo las que subió el sync (nombre = hash del CDN de
+        // Alegra), para no tocar imágenes del blog o del tema.
+        $file = basename((string) get_attached_file($att_id));
+        if (preg_match('/^[0-9a-f]{40}-/', $file)) $orphans[] = $att_id;
     }
     return $orphans;
 }
