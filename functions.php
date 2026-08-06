@@ -932,7 +932,7 @@ add_action('template_redirect', 'refugios_manual_featured_refresh');
 /**
  * ¿La fila/columna es blanca uniforme? Muestrea cada N píxeles.
  */
-function refugios_scanline_is_white($img, $fixed, $length, $vertical, $tol = 238)
+function refugios_scanline_is_white($img, $fixed, $length, $vertical, $tol = 210)
 {
     // Tolerante a ruido JPEG: hasta 5% de muestras impuras siguen contando
     // como línea blanca (sombras fantasma de 1px arruinaban la detección).
