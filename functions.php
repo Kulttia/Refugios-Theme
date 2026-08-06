@@ -972,15 +972,41 @@ function refugios_trim_cover($attachment_id)
     $h = imagesy($img);
     if ($w < 100 || $h < 100) { imagedestroy($img); return false; }
 
-    // Buscar límites del contenido no-blanco
-    $top = 0;
-    while ($top < $h - 1 && refugios_scanline_is_white($img, $top, $w, false)) $top++;
-    $bottom = $h - 1;
-    while ($bottom > $top && refugios_scanline_is_white($img, $bottom, $w, false)) $bottom--;
-    $left = 0;
-    while ($left < $w - 1 && refugios_scanline_is_white($img, $left, $h, true)) $left++;
-    $right = $w - 1;
-    while ($right > $left && refugios_scanline_is_white($img, $right, $h, true)) $right--;
+    // Buscar límites del contenido no-blanco. Algunas imágenes traen un
+    // rectángulo fantasma de 1-3px cerca del borde: una línea fina seguida de
+    // más blanco no es contenido, se atraviesa y se sigue buscando.
+    $advance = function ($from, $to, $stepDir, $lineLen, $vertical) use ($img) {
+        $i = $from;
+        while ($i !== $to) {
+            if (refugios_scanline_is_white($img, $i, $lineLen, $vertical)) {
+                $i += $stepDir;
+                continue;
+            }
+            // Línea no blanca: medir el grosor de la franja
+            $run = 0;
+            $j = $i;
+            while ($j !== $to && !refugios_scanline_is_white($img, $j, $lineLen, $vertical) && $run <= 6) {
+                $j += $stepDir;
+                $run++;
+            }
+            if ($run > 5) return $i; // franja gruesa: contenido real
+            // Franja fina: ¿la siguen al menos 12 líneas blancas? → fantasma
+            $white_after = 0;
+            $k = $j;
+            while ($k !== $to && $white_after < 12 && refugios_scanline_is_white($img, $k, $lineLen, $vertical)) {
+                $k += $stepDir;
+                $white_after++;
+            }
+            if ($white_after >= 12) { $i = $j; continue; }
+            return $i;
+        }
+        return $i;
+    };
+
+    $top = $advance(0, $h - 1, 1, $w, false);
+    $bottom = $advance($h - 1, $top, -1, $w, false);
+    $left = $advance(0, $w - 1, 1, $h, true);
+    $right = $advance($w - 1, $left, -1, $h, true);
 
     $cw = $right - $left + 1;
     $ch = $bottom - $top + 1;
