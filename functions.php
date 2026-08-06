@@ -1303,3 +1303,103 @@ function refugios_cart_recommendations()
     echo '</ul></section>';
 }
 add_action('woocommerce_cart_collaterals', 'refugios_cart_recommendations', 15);
+
+/* =========================================================
+ 16. ENVÍO GRATIS DESDE $150.000 — BARRA DE PROGRESO
+ ========================================================= */
+
+const REFUGIOS_ENVIO_GRATIS = 150000;
+
+function refugios_free_shipping_bar()
+{
+    if (!function_exists('WC') || WC()->cart->is_empty()) return;
+
+    $subtotal = (float) WC()->cart->get_displayed_subtotal();
+    $meta = REFUGIOS_ENVIO_GRATIS;
+    $pct = min(100, round($subtotal / $meta * 100));
+    $falta = max(0, $meta - $subtotal);
+    ?>
+    <div class="refugios-envio-bar" role="status">
+        <p class="refugios-envio-bar__text">
+            <?php if ($falta > 0): ?>
+                <i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
+                <?php printf(
+                    /* translators: %s: monto faltante */
+                    esc_html__('Te faltan %s para el envío gratis', 'refugios'),
+                    '<strong>' . wp_kses_post(wc_price($falta)) . '</strong>'
+                ); ?>
+            <?php else: ?>
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                <strong><?php esc_html_e('¡Tienes envío gratis! 🎉', 'refugios'); ?></strong>
+            <?php endif; ?>
+        </p>
+        <div class="refugios-envio-bar__track">
+            <div class="refugios-envio-bar__fill<?php echo $falta <= 0 ? ' is-full' : ''; ?>"
+                 style="width: <?php echo esc_attr($pct); ?>%;"></div>
+        </div>
+    </div>
+    <?php
+}
+add_action('woocommerce_before_cart', 'refugios_free_shipping_bar', 5);
+add_action('woocommerce_before_checkout_form', 'refugios_free_shipping_bar', 5);
+
+/* =========================================================
+ 17. CORREO DE RESEÑA — 7 DÍAS DESPUÉS DEL PEDIDO COMPLETADO
+ ========================================================= */
+
+/** Al completarse el pedido, se agenda el correo una sola vez. */
+function refugios_schedule_review_email($order_id)
+{
+    if (get_post_meta($order_id, '_refugios_review_email', true)) return;
+    update_post_meta($order_id, '_refugios_review_email', 'programado');
+    wp_schedule_single_event(time() + 7 * DAY_IN_SECONDS, 'refugios_send_review_email', [$order_id]);
+}
+add_action('woocommerce_order_status_completed', 'refugios_schedule_review_email');
+
+function refugios_send_review_email_handler($order_id)
+{
+    $order = wc_get_order($order_id);
+    if (!$order) return;
+    if (get_post_meta($order_id, '_refugios_review_email', true) === 'enviado') return;
+
+    $email = $order->get_billing_email();
+    if (!$email) return;
+    $nombre = $order->get_billing_first_name() ?: __('lector', 'refugios');
+
+    // Lista de libros del pedido con enlace directo a su sección de reseñas
+    $items_html = '';
+    foreach ($order->get_items() as $item) {
+        $product = $item->get_product();
+        if (!$product) continue;
+        $url = get_permalink($product->get_id()) . '#reviews';
+        $items_html .= '<li style="margin:0 0 10px;">'
+            . '<a href="' . esc_url($url) . '" style="color:#4e342e;font-weight:bold;">'
+            . esc_html($product->get_name()) . '</a></li>';
+    }
+    if (!$items_html) return;
+
+    $asunto = sprintf(__('%s, ¿qué te pareció tu lectura?', 'refugios'), $nombre);
+
+    $cuerpo = '
+    <div style="background:#f5e9e2;padding:32px 16px;font-family:Georgia,serif;color:#4e342e;">
+      <div style="max-width:520px;margin:0 auto;background:#fff;border:2px solid #4e342e;padding:32px;">
+        <h1 style="font-size:22px;margin:0 0 16px;">Hola, ' . esc_html($nombre) . ' 👋</h1>
+        <p style="line-height:1.6;">Hace unos días te llevaste esto de Refugios y queremos saber:
+        ¿qué tal estuvo? Tu opinión ayuda a otros lectores a encontrar su próximo libro
+        — y a nosotros a seguir curando bien la colección.</p>
+        <ul style="line-height:1.6;padding-left:18px;">' . $items_html . '</ul>
+        <p style="line-height:1.6;">Déjanos tu reseña con un clic en el título. Dos líneas bastan.</p>
+        <p style="margin-top:24px;font-size:13px;color:#8a6f66;">Con café,<br>el equipo de Refugios<br>
+        Librería &amp; Café · Itagüí</p>
+      </div>
+    </div>';
+
+    $headers = [
+        'Content-Type: text/html; charset=UTF-8',
+        'From: Refugios <' . get_option('admin_email') . '>',
+    ];
+    if (wp_mail($email, $asunto, $cuerpo, $headers)) {
+        update_post_meta($order_id, '_refugios_review_email', 'enviado');
+    }
+}
+add_action('refugios_send_review_email', 'refugios_send_review_email_handler');
