@@ -1247,3 +1247,51 @@ function refugios_book_schema_filter($schema)
 {
     return $schema; // reservado: el JSON-LD se ajusta directo en refugios_seo_head
 }
+
+/**
+ * Título de relacionados con intención de venta.
+ */
+add_filter('woocommerce_product_related_products_heading', fn() => __('También te puede gustar', 'refugios'));
+
+/**
+ * Recomendaciones en el carrito: libros de las mismas colecciones de lo
+ * que ya está en el carrito. El momento de mayor intención de compra.
+ */
+function refugios_cart_recommendations()
+{
+    if (!function_exists('WC') || WC()->cart->is_empty()) return;
+
+    $in_cart = [];
+    $cat_ids = [];
+    foreach (WC()->cart->get_cart() as $item) {
+        $in_cart[] = $item['product_id'];
+        foreach (wc_get_product_term_ids($item['product_id'], 'product_cat') as $t) {
+            $cat_ids[] = $t;
+        }
+    }
+    if (!$cat_ids) return;
+
+    $recs = wc_get_products([
+        'status' => 'publish',
+        'limit' => 4,
+        'category' => array_map(
+            fn($t) => get_term($t, 'product_cat')->slug ?? '',
+            array_unique($cat_ids)
+        ),
+        'exclude' => $in_cart,
+        'stock_status' => 'instock',
+        'orderby' => 'rand',
+    ]);
+    if (!$recs) return;
+
+    echo '<section class="refugios-cart-recs"><h2>' . esc_html__('Completa tu pedido', 'refugios') . '</h2>';
+    echo '<ul class="products columns-4">';
+    foreach ($recs as $rec) {
+        $post_object = get_post($rec->get_id());
+        setup_postdata($GLOBALS['post'] = $post_object);
+        wc_get_template_part('content', 'product');
+    }
+    wp_reset_postdata();
+    echo '</ul></section>';
+}
+add_action('woocommerce_cart_collaterals', 'refugios_cart_recommendations', 15);
