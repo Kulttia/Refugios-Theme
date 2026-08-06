@@ -858,6 +858,12 @@ function refugios_refresh_featured_books()
     ]);
     if (empty($recent)) return;
 
+    // Regla: al Home solo van libros. Los productos de regalos (bolsas de
+    // café, objetos) no se destacan aunque sean novedad.
+    $recent = array_values(array_filter($recent, function ($p) {
+        return !has_term('regalos-de-siempre', 'product_cat', $p->get_id());
+    }));
+
     // Portada mínima decente (500x700); ordenadas por resolución real
     $scored = [];
     foreach ($recent as $p) {
