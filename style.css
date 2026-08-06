@@ -4,7 +4,7 @@ Theme URI: https://refugios.com
 Author: Kulttia Lab
 Author URI: https://kulttia.com/
 Description: Tema brutalista suizo-retro para Refugios, librería y cafetería especializada. Diseñado para WordPress + WooCommerce con Elementor.
-Version: 3.10.0
+Version: 3.10.1
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
@@ -8003,4 +8003,73 @@ a.add_to_wishlist i {
 
 .refugios-envio-bar__fill.is-full {
   background: #4caf7d !important;
+}
+
+/* =============================================
+   v3.10.1 — BARRA DE ENVÍO: TEXTO ALINEADO + CAMIÓN ANDANDO
+   ============================================= */
+.refugios-envio-bar__text,
+.refugios-envio-bar__text strong,
+.refugios-envio-bar__text .woocommerce-Price-amount,
+.refugios-envio-bar__text .woocommerce-Price-currencySymbol {
+  font-family: var(--font-sans) !important;
+  font-size: 0.9rem !important;
+  color: var(--color-brown) !important;
+  line-height: 1.4 !important;
+  vertical-align: baseline !important;
+}
+
+.refugios-envio-bar__text {
+  display: block !important;
+  margin: 0 0 1.35rem !important;
+}
+
+.refugios-envio-bar__text strong,
+.refugios-envio-bar__text strong * {
+  font-weight: 800 !important;
+}
+
+/* Pista con espacio arriba para el camión */
+.refugios-envio-bar__track {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.refugios-envio-bar__fill {
+  position: relative;
+  z-index: 1;
+}
+
+/* Camión que avanza con el progreso y "traquetea" al andar */
+.refugios-envio-bar__truck {
+  position: absolute !important;
+  top: -1.45rem !important;
+  transform: translateX(-55%);
+  transition: left 0.5s ease !important;
+  color: var(--color-brown) !important;
+  font-size: 1.05rem !important;
+  z-index: 2;
+  animation: refugios-traqueteo 0.7s ease-in-out infinite;
+}
+
+.refugios-envio-bar__truck.is-full {
+  color: #2e7d52 !important;
+  animation: refugios-llegada 0.6s ease 1;
+}
+
+@keyframes refugios-traqueteo {
+  0%, 100% { transform: translateX(-55%) translateY(0); }
+  25%      { transform: translateX(-55%) translateY(-1.5px) rotate(-1.5deg); }
+  75%      { transform: translateX(-55%) translateY(0.5px) rotate(1deg); }
+}
+
+@keyframes refugios-llegada {
+  0%   { transform: translateX(-55%) scale(1); }
+  50%  { transform: translateX(-55%) scale(1.35); }
+  100% { transform: translateX(-55%) scale(1); }
+}
+
+/* Respeto a quien pide menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .refugios-envio-bar__truck { animation: none !important; }
 }

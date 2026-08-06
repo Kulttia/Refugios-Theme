@@ -1322,7 +1322,6 @@ function refugios_free_shipping_bar()
     <div class="refugios-envio-bar" role="status">
         <p class="refugios-envio-bar__text">
             <?php if ($falta > 0): ?>
-                <i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
                 <?php printf(
                     /* translators: %s: monto faltante */
                     esc_html__('Te faltan %s para el envío gratis', 'refugios'),
@@ -1336,6 +1335,10 @@ function refugios_free_shipping_bar()
         <div class="refugios-envio-bar__track">
             <div class="refugios-envio-bar__fill<?php echo $falta <= 0 ? ' is-full' : ''; ?>"
                  style="width: <?php echo esc_attr($pct); ?>%;"></div>
+            <span class="refugios-envio-bar__truck<?php echo $falta <= 0 ? ' is-full' : ''; ?>"
+                  style="left: <?php echo esc_attr($pct); ?>%;" aria-hidden="true">
+                <i class="fa-solid fa-truck-fast"></i>
+            </span>
         </div>
     </div>
     <?php
