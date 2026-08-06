@@ -737,6 +737,14 @@ function refugios_seo_head() {
                     ],
                 ],
             ];
+            // Estrellas en Google cuando el libro tiene reseñas
+            if ($product->get_review_count() > 0) {
+                $schema['@graph'][1]['aggregateRating'] = [
+                    '@type'       => 'AggregateRating',
+                    'ratingValue' => (string) $product->get_average_rating(),
+                    'reviewCount' => (int) $product->get_review_count(),
+                ];
+            }
             echo "\n<!-- JSON-LD: Product + Offer -->\n";
             echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . "\n";
         }
