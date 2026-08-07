@@ -153,6 +153,7 @@ if (!empty($featured_products)): ?>
 ?>
 
                             <a href="<?php echo esc_url($permalink); ?>" class="refugios-product-card__media" aria-hidden="true" tabindex="-1">
+        <?php if ($product->is_on_sale()) { echo wp_kses_post(apply_filters('woocommerce_sale_flash', '<span class="onsale">' . esc_html__('¡Oferta!', 'refugios') . '</span>', null, $product)); } ?>
                                 <?php echo $product->get_image('large'); ?>
                             </a>
 

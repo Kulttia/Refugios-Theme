@@ -34,6 +34,7 @@ $wa_url = 'https://wa.me/' . $clean_phone . '?text=' . rawurlencode('Hola, me in
 ?>
 
     <a href="<?php echo esc_url($link); ?>" class="refugios-product-card__media" aria-hidden="true" tabindex="-1">
+        <?php if ($product->is_on_sale()) { echo wp_kses_post(apply_filters('woocommerce_sale_flash', '<span class="onsale">' . esc_html__('¡Oferta!', 'refugios') . '</span>', null, $product)); } ?>
         <?php echo $product->get_image('large'); ?>
     </a>
 
