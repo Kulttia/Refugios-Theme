@@ -4,7 +4,7 @@ Theme URI: https://refugios.com
 Author: Kulttia Lab
 Author URI: https://kulttia.com/
 Description: Tema brutalista suizo-retro para Refugios, librería y cafetería especializada. Diseñado para WordPress + WooCommerce con Elementor.
-Version: 3.11.2
+Version: 3.11.3
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
@@ -8120,7 +8120,7 @@ a.add_to_wishlist i {
   color: rgba(78, 52, 46, 0.55) !important;
 }
 
-/* Insignia -% sobre la portada de la card */
+/* Insignia -% sobre la portada de la card — estilo brutalista completo */
 .refugios-product-card__media .onsale {
   position: absolute !important;
   top: 0.7rem !important;
@@ -8128,4 +8128,20 @@ a.add_to_wishlist i {
   right: auto !important;
   z-index: 5 !important;
   margin: 0 !important;
+  display: inline-block !important;
+  background: var(--color-amber) !important;
+  color: var(--color-brown) !important;
+  border: 2px solid var(--color-brown) !important;
+  box-shadow: 2px 2px 0 var(--color-brown) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  line-height: 1 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0.35rem 0.5rem !important;
+  text-align: center !important;
 }
