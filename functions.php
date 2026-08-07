@@ -1601,3 +1601,22 @@ function refugios_acart_send_handler($post_id)
     }
 }
 add_action('refugios_acart_send', 'refugios_acart_send_handler');
+
+
+/**
+ * Insignia de oferta con el porcentaje real ("-15%") en vez del
+ * "¡Oferta!" genérico de WooCommerce.
+ */
+function refugios_sale_flash($html, $post, $product)
+{
+    if ($product && $product->is_type('simple') && $product->is_on_sale()) {
+        $regular = (float) $product->get_regular_price();
+        $sale = (float) $product->get_sale_price();
+        if ($regular > 0 && $sale > 0 && $sale < $regular) {
+            $pct = round((1 - $sale / $regular) * 100);
+            return '<span class="onsale">-' . $pct . '%</span>';
+        }
+    }
+    return $html;
+}
+add_filter('woocommerce_sale_flash', 'refugios_sale_flash', 10, 3);

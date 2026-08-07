@@ -4,7 +4,7 @@ Theme URI: https://refugios.com
 Author: Kulttia Lab
 Author URI: https://kulttia.com/
 Description: Tema brutalista suizo-retro para Refugios, librería y cafetería especializada. Diseñado para WordPress + WooCommerce con Elementor.
-Version: 3.11.0
+Version: 3.11.1
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
@@ -8072,4 +8072,50 @@ a.add_to_wishlist i {
 /* Respeto a quien pide menos movimiento */
 @media (prefers-reduced-motion: reduce) {
   .refugios-envio-bar__truck { animation: none !important; }
+}
+
+/* =============================================
+   v3.11.1 — PRECIOS EN OFERTA BIEN PUESTOS
+   (campaña de lanzamiento -15%)
+   ============================================= */
+/* El precio nuevo: protagonista, sin el subrayado feo de Woo */
+.refugios-product-card__price ins,
+.woocommerce div.product p.price ins {
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+.refugios-product-card__price ins .woocommerce-Price-amount,
+.refugios-product-card__price ins {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: var(--color-brown) !important;
+}
+
+/* El precio anterior: legible, tachado limpio, discreto */
+.refugios-product-card__price del,
+.woocommerce div.product p.price del {
+  font-size: 0.9rem !important;
+  font-weight: 400 !important;
+  color: rgba(78, 52, 46, 0.55) !important;
+  text-decoration: line-through !important;
+  margin-right: 0.45rem !important;
+}
+
+.refugios-product-card__price del .woocommerce-Price-amount {
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  color: inherit !important;
+}
+
+/* En la página de producto, más aire y jerarquía */
+.woocommerce div.product p.price ins .woocommerce-Price-amount {
+  font-size: 1.9rem !important;
+  font-weight: 700 !important;
+  color: var(--color-brown) !important;
+}
+
+.woocommerce div.product p.price del .woocommerce-Price-amount {
+  font-size: 1.1rem !important;
+  color: rgba(78, 52, 46, 0.55) !important;
 }
