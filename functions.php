@@ -1406,3 +1406,198 @@ function refugios_send_review_email_handler($order_id)
     }
 }
 add_action('refugios_send_review_email', 'refugios_send_review_email_handler');
+
+/* =========================================================
+ 18. CARRITO ABANDONADO — CAPTURA + CORREO DE RESCATE (4h)
+ Apenas el cliente escribe su correo en el checkout se guarda
+ una foto del carrito. Si en 4 horas no hay pedido con ese
+ correo, se envía UN correo de rescate. Comprar lo cancela.
+ ========================================================= */
+
+/** Post type interno para las capturas (sin UI). */
+function refugios_acart_cpt()
+{
+    register_post_type('refugios_acart', [
+        'public' => false,
+        'show_ui' => false,
+        'supports' => ['title'],
+    ]);
+}
+add_action('init', 'refugios_acart_cpt');
+
+/** JS de captura: manda el correo del checkout por AJAX al escribirlo. */
+function refugios_acart_capture_js()
+{
+    if (!function_exists('is_checkout') || !is_checkout() || is_wc_endpoint_url()) return;
+    $js = "
+    (function(){
+      var f=document.getElementById('billing_email');
+      if(!f||!window.refugiosData)return;
+      var sent='';
+      function capture(){
+        var v=f.value.trim();
+        if(!v||v===sent||!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(v))return;
+        sent=v;
+        var d=new FormData();
+        d.append('action','refugios_acart');
+        d.append('nonce',refugiosData.nonce);
+        d.append('email',v);
+        fetch(refugiosData.ajaxUrl,{method:'POST',body:d,credentials:'same-origin'});
+      }
+      f.addEventListener('blur',capture);
+      f.addEventListener('change',capture);
+      if(f.value)capture();
+    })();";
+    wp_add_inline_script('refugios-main-v5', $js);
+}
+add_action('wp_enqueue_scripts', 'refugios_acart_capture_js', 20);
+
+/** AJAX: guarda/actualiza la captura y programa el correo a +4h. */
+function refugios_acart_capture()
+{
+    check_ajax_referer('refugios_nonce', 'nonce');
+    $email = sanitize_email($_POST['email'] ?? '');
+    if (!is_email($email) || !function_exists('WC') || WC()->cart->is_empty()) {
+        wp_send_json_success(); // silencio: esto jamás debe romper el checkout
+    }
+
+    $items = [];
+    foreach (WC()->cart->get_cart() as $item) {
+        $items[] = ['id' => (int) $item['product_id'], 'qty' => (int) $item['quantity']];
+    }
+
+    // Una captura activa por correo: se reutiliza y se reprograma
+    $existing = get_posts([
+        'post_type' => 'refugios_acart',
+        'meta_key' => '_acart_email',
+        'meta_value' => $email,
+        'post_status' => 'any',
+        'numberposts' => 1,
+        'fields' => 'ids',
+    ]);
+
+    if ($existing) {
+        $post_id = $existing[0];
+        wp_clear_scheduled_hook('refugios_acart_send', [$post_id]);
+    } else {
+        $post_id = wp_insert_post([
+            'post_type' => 'refugios_acart',
+            'post_title' => $email,
+            'post_status' => 'private',
+        ]);
+        if (!$post_id || is_wp_error($post_id)) wp_send_json_success();
+        update_post_meta($post_id, '_acart_email', $email);
+    }
+
+    update_post_meta($post_id, '_acart_items', wp_json_encode($items));
+    update_post_meta($post_id, '_acart_status', 'pendiente');
+    update_post_meta($post_id, '_acart_time', time());
+    wp_schedule_single_event(time() + 4 * HOUR_IN_SECONDS, 'refugios_acart_send', [$post_id]);
+    wp_send_json_success();
+}
+add_action('wp_ajax_refugios_acart', 'refugios_acart_capture');
+add_action('wp_ajax_nopriv_refugios_acart', 'refugios_acart_capture');
+
+/** Compró: cancelar el rescate pendiente de ese correo. */
+function refugios_acart_on_order($order_id)
+{
+    $order = wc_get_order($order_id);
+    if (!$order) return;
+    $email = $order->get_billing_email();
+    if (!$email) return;
+    $captures = get_posts([
+        'post_type' => 'refugios_acart',
+        'meta_key' => '_acart_email',
+        'meta_value' => $email,
+        'post_status' => 'any',
+        'numberposts' => 5,
+        'fields' => 'ids',
+    ]);
+    foreach ($captures as $pid) {
+        if (get_post_meta($pid, '_acart_status', true) === 'pendiente') {
+            update_post_meta($pid, '_acart_status', 'recuperado');
+            wp_clear_scheduled_hook('refugios_acart_send', [$pid]);
+        }
+    }
+}
+add_action('woocommerce_new_order', 'refugios_acart_on_order');
+
+/** El correo de rescate. */
+function refugios_acart_send_handler($post_id)
+{
+    if (get_post_meta($post_id, '_acart_status', true) !== 'pendiente') return;
+    $email = get_post_meta($post_id, '_acart_email', true);
+    $since = (int) get_post_meta($post_id, '_acart_time', true);
+    if (!is_email($email)) return;
+
+    // Doble chequeo: ¿pidió algo después de la captura?
+    $orders = wc_get_orders([
+        'billing_email' => $email,
+        'date_created' => '>' . ($since - 60),
+        'limit' => 1,
+        'return' => 'ids',
+    ]);
+    if ($orders) {
+        update_post_meta($post_id, '_acart_status', 'recuperado');
+        return;
+    }
+
+    $items = json_decode((string) get_post_meta($post_id, '_acart_items', true), true) ?: [];
+    $items_html = '';
+    $subtotal = 0;
+    foreach ($items as $it) {
+        $product = wc_get_product($it['id'] ?? 0);
+        if (!$product || !$product->is_in_stock()) continue;
+        $qty = max(1, (int) ($it['qty'] ?? 1));
+        $subtotal += (float) $product->get_price() * $qty;
+        $author = function_exists('refugios_get_product_author') ? refugios_get_product_author($product) : '';
+        $items_html .= '<p style="margin:0 0 10px;line-height:1.5;">📖 <strong>'
+            . esc_html($product->get_name()) . '</strong>'
+            . ($author && $author !== 'Autor desconocido' ? ' — ' . esc_html($author) : '')
+            . '<br><span style="font-family:Arial,sans-serif;font-size:14px;">'
+            . wp_strip_all_tags(wc_price($product->get_price())) . '</span></p>';
+    }
+    if (!$items_html) {
+        update_post_meta($post_id, '_acart_status', 'sin_items');
+        return;
+    }
+
+    $falta = max(0, REFUGIOS_ENVIO_GRATIS - $subtotal);
+    $envio_html = $falta > 0
+        ? 'Te faltan <strong style="color:#4e342e;">' . wp_strip_all_tags(wc_price($falta)) . '</strong> para el envío gratis 🚚'
+        : '<strong style="color:#2e7d52;">¡Este pedido ya tiene envío gratis! 🚚</strong>';
+
+    $phone = get_theme_mod('refugios_phone', '');
+    $wa = 'https://wa.me/' . preg_replace('/[^0-9]/', '', $phone);
+    $cart_url = wc_get_cart_url();
+
+    $asunto = __('Tus libros siguen esperándote 📚', 'refugios');
+    $cuerpo = '
+    <div style="background:#f5e9e2;padding:36px 16px;font-family:Georgia,serif;color:#4e342e;">
+      <div style="max-width:520px;margin:0 auto;background:#fff;border:2px solid #4e342e;padding:36px;">
+        <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#d9a066;font-weight:bold;">Refugios · Librería &amp; Café</p>
+        <h1 style="font-size:24px;line-height:1.25;margin:0 0 18px;">' . esc_html__('Tus libros siguen esperándote en la mesa 📚', 'refugios') . '</h1>
+        <p style="line-height:1.65;margin:0 0 18px;">' . esc_html__('Dejaste esto apartado y no queremos que se te pierda entre las pestañas del navegador. En la librería, cuando alguien deja un libro sobre la mesa, se lo guardamos un ratico. Esto es lo mismo, pero digital:', 'refugios') . '</p>
+        <div style="border:2px solid #4e342e;background:#f5e9e2;padding:16px 20px;margin:0 0 20px;">'
+          . $items_html .
+          '<p style="margin:14px 0 0;padding-top:12px;border-top:1px solid #d9a066;font-family:Arial,sans-serif;font-size:13px;color:#8a6f66;">' . $envio_html . '</p>
+        </div>
+        <div style="text-align:center;margin:0 0 22px;">
+          <a href="' . esc_url($cart_url) . '" style="display:inline-block;background:#d9a066;color:#4e342e;border:2px solid #4e342e;font-family:Arial,sans-serif;font-size:13px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;padding:14px 28px;">' . esc_html__('Retomar mi carrito', 'refugios') . '</a>
+        </div>
+        <p style="line-height:1.65;margin:0 0 6px;font-size:15px;">' . esc_html__('Pago seguro con Wompi y Bancolombia · todas las tarjetas · Addi y Sistecrédito si prefieres cuotas.', 'refugios') . '</p>
+        <p style="margin-top:26px;font-size:13px;color:#8a6f66;line-height:1.5;">' . esc_html__('Si ya compraste o cambiaste de idea, ignora este correo sin culpa.', 'refugios') . '<br><br>'
+          . esc_html__('Con café,', 'refugios') . '<br>' . esc_html__('el equipo de Refugios', 'refugios') . '<br>'
+          . '<a href="' . esc_url($wa) . '" style="color:#8a6f66;">' . esc_html__('¿Alguna duda? Escríbenos por WhatsApp', 'refugios') . '</a></p>
+      </div>
+    </div>';
+
+    $headers = [
+        'Content-Type: text/html; charset=UTF-8',
+        'From: Refugios <' . get_option('admin_email') . '>',
+    ];
+    if (wp_mail($email, $asunto, $cuerpo, $headers)) {
+        update_post_meta($post_id, '_acart_status', 'enviado');
+    }
+}
+add_action('refugios_acart_send', 'refugios_acart_send_handler');
