@@ -753,7 +753,7 @@ function refugios_seo_head() {
                 ],
             ];
             // Limpiar los campos opcionales que quedaron nulos
-            \$schema['@graph'][1] = array_filter(\$schema['@graph'][1], fn(\$v) => \$v !== null);
+            $schema['@graph'][1] = array_filter($schema['@graph'][1], fn($v) => $v !== null);
 
             // Estrellas en Google cuando el libro tiene reseñas
             if ($product->get_review_count() > 0) {
