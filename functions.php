@@ -722,8 +722,13 @@ function refugios_seo_head() {
                         'name'        => get_the_title(),
                         'author'      => ['@type' => 'Person', 'name' => refugios_get_product_author($product)],
                         'isbn'        => $product->get_sku(),
-                        'description' => wp_strip_all_tags($product->get_description() ?: $product->get_short_description()),
+                        'description' => wp_strip_all_tags($product->get_description() ?: $product->get_short_description())
+                            ?: sprintf('%s, disponible en Refugios, librería y café en Itagüí.', get_the_title()),
                         'sku'         => $product->get_sku(),
+                        // El ISBN-13 ES un GTIN-13: cierra el aviso de identificador
+                        'gtin13'      => preg_match('/^97[89]\d{10}$/', (string) $product->get_sku()) ? $product->get_sku() : null,
+                        'brand'       => ($sello = $product->get_attribute('Sello') ?: $product->get_attribute('Editorial'))
+                            ? ['@type' => 'Brand', 'name' => $sello] : null,
                         'image'       => get_the_post_thumbnail_url($post->ID, 'full') ?: '',
                         'offers'      => [
                             '@type'         => 'Offer',
@@ -732,11 +737,24 @@ function refugios_seo_head() {
                             'price'         => $product->get_price(),
                             'availability'  => $product->is_in_stock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
                             'itemCondition' => 'https://schema.org/NewCondition',
+                            'priceValidUntil' => gmdate('Y-m-d', strtotime('+3 months')),
                             'seller'        => ['@id' => $site_url . '#organization'],
+                            // Ley de retracto colombiana: 5 días hábiles
+                            'hasMerchantReturnPolicy' => [
+                                '@type' => 'MerchantReturnPolicy',
+                                'applicableCountry' => 'CO',
+                                'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                                'merchantReturnDays' => 5,
+                                'returnMethod' => 'https://schema.org/ReturnByMail',
+                                'returnFees' => 'https://schema.org/ReturnFeesCustomerResponsibility',
+                            ],
                         ],
                     ],
                 ],
             ];
+            // Limpiar los campos opcionales que quedaron nulos
+            \$schema['@graph'][1] = array_filter(\$schema['@graph'][1], fn(\$v) => \$v !== null);
+
             // Estrellas en Google cuando el libro tiene reseñas
             if ($product->get_review_count() > 0) {
                 $schema['@graph'][1]['aggregateRating'] = [
