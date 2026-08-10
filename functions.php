@@ -1651,3 +1651,193 @@ function refugios_sale_flash($html, $post, $product)
     return $html;
 }
 add_filter('woocommerce_sale_flash', 'refugios_sale_flash', 10, 3);
+
+/* =========================================================
+ 19. ACTUALIZACIÓN DEL DOCUMENTO LEGAL (una sola corrida)
+ Corrige la dirección desactualizada del responsable del
+ tratamiento de datos y agrega el Programa de fidelización.
+ El contenido vive en un widget de Elementor: se edita el
+ meta _elementor_data respetando su estructura, con copia
+ de respaldo previa.
+ ========================================================= */
+
+const REFUGIOS_LEGAL_PAGE_ID = 3022;
+
+/** Dirección correcta del establecimiento (responsable del tratamiento). */
+function refugios_legal_fix_address($html)
+{
+    return preg_replace(
+        '/Carrera\s*50\s*a?\s*#?\s*76\s*sur\s*111(\s*ITAGUI\s*\(ANT\)\.?)?/iu',
+        'Calle 51 # 48 - 53, local 5, Itagüí (Antioquia)',
+        $html
+    );
+}
+
+/** Bloque HTML del programa de fidelización, con el formato del documento. */
+function refugios_loyalty_html()
+{
+    $b = '<p><b>PROGRAMA DE FIDELIZACIÓN DE CLIENTES</b></p>';
+
+    $b .= '<p><b>1. Descripción del programa</b></p>';
+    $b .= '<p>Librería Refugios ofrece a sus clientes un programa de fidelización sin costo, que reconoce las compras recurrentes mediante la acumulación de sellos y la entrega de beneficios. El programa consta de dos tarjetas independientes, una de bebidas y una de libros, cuyos sellos se acumulan por separado y no son intercambiables entre sí.</p>';
+
+    $b .= '<p><b>2. Vinculación</b></p>';
+    $b .= '<p>La vinculación es automática y gratuita. El cliente queda inscrito cuando realiza una compra en el establecimiento y suministra su número de documento de identidad y su correo electrónico al momento de la facturación. No se requiere inscripción previa ni tarjeta física: la acumulación se registra a nombre del documento de identidad reportado en la factura.</p>';
+    $b .= '<p>Las compras facturadas a consumidor final, sin documento de identidad identificado, no acumulan sellos y no pueden asignarse posteriormente.</p>';
+
+    $b .= '<p><b>3. Acumulación de sellos</b></p>';
+    $b .= '<p><b>Tarjeta de bebidas.</b> Cada bebida preparada en barra equivale a un (1) sello, sin importar su tipo o precio. Si en una misma compra se adquieren varias bebidas, se acumula un sello por cada una.</p>';
+    $b .= '<p>No acumulan sellos las bebidas envasadas o embotelladas, incluidas el agua embotellada, los tés y las sodas de marca comercial.</p>';
+    $b .= '<p><b>Tarjeta de libros.</b> Cada libro adquirido equivale a un (1) sello. Si en una misma compra se adquieren varios libros, se acumula un sello por cada uno.</p>';
+    $b .= '<p>No acumulan sellos los libros de segunda mano ni los pedidos especiales encargados a solicitud del cliente.</p>';
+    $b .= '<p><b>Exclusión general.</b> No acumulan sellos los productos entregados como cortesía, los obtenidos con el cien por ciento (100%) de descuento, ni los redimidos como premio de este mismo programa.</p>';
+
+    $b .= '<p><b>4. Beneficios</b></p>';
+    $b .= '<table class="refugios-legal-table"><thead><tr>'
+        . '<th>Tarjeta</th><th>Sellos requeridos</th><th>Beneficio</th>'
+        . '</tr></thead><tbody>'
+        . '<tr><td>Bebidas</td><td>9</td><td>Un (1) café americano sin costo</td></tr>'
+        . '<tr><td>Libros</td><td>5</td><td>Veinticinco por ciento (25%) de descuento sobre un (1) libro</td></tr>'
+        . '</tbody></table>';
+    $b .= '<p>Al completar los sellos requeridos, el beneficio queda disponible para su redención y la tarjeta correspondiente reinicia su conteo en cero.</p>';
+
+    $b .= '<p><b>5. Redención</b></p>';
+    $b .= '<p>Los beneficios se redimen únicamente de forma presencial en el establecimiento, presentando el documento de identidad del titular. Los beneficios son personales e intransferibles, no son canjeables por dinero en efectivo, no son acumulables entre sí y no son acumulables con otras promociones vigentes.</p>';
+    $b .= '<p>El descuento sobre libros aplica sobre un único ejemplar por beneficio redimido y no aplica sobre libros de segunda mano ni sobre pedidos especiales.</p>';
+
+    $b .= '<p><b>6. Vigencia</b></p>';
+    $b .= '<p>Los sellos acumulados y los beneficios obtenidos no tienen fecha de vencimiento mientras el programa se encuentre vigente. El cliente podrá redimirlos en la oportunidad que prefiera, sin límite de tiempo.</p>';
+
+    $b .= '<p><b>7. Comunicaciones</b></p>';
+    $b .= '<p>Al vincularse al programa, el cliente autoriza a Librería Refugios a enviarle comunicaciones por correo electrónico relacionadas con su tarjeta: confirmación de vinculación, avisos de progreso, notificación de beneficios obtenidos y recomendaciones de lectura.</p>';
+    $b .= '<p>El cliente podrá solicitar en cualquier momento la suspensión de estas comunicaciones respondiendo a cualquiera de los correos recibidos o escribiendo a administracion@refugios.co, sin que ello afecte los sellos ya acumulados.</p>';
+
+    $b .= '<p><b>8. Retiro del programa</b></p>';
+    $b .= '<p>El cliente podrá solicitar su retiro del programa en cualquier momento. El retiro implica la eliminación de sus sellos acumulados y de los beneficios no redimidos, y no afecta su condición de cliente ni la información de facturación que Librería Refugios debe conservar por obligación legal.</p>';
+
+    $b .= '<p><b>9. Exclusiones de participación</b></p>';
+    $b .= '<p>No podrán participar en el programa los empleados de Librería Refugios ni sus establecimientos asociados.</p>';
+
+    $b .= '<p><b>10. Tratamiento de datos</b></p>';
+    $b .= '<p>Los datos personales suministrados para el programa —nombre, documento de identidad y correo electrónico— serán tratados conforme a la Ley 1581 de 2012 y a la Política de Privacidad contenida en este mismo documento, con la finalidad exclusiva de administrar el programa de fidelización y enviar las comunicaciones descritas en el numeral 7.</p>';
+
+    $b .= '<p><b>11. Modificación y terminación</b></p>';
+    $b .= '<p>Librería Refugios podrá modificar las condiciones del programa o darlo por terminado en cualquier momento, informándolo a través de este sitio web con una antelación no inferior a treinta (30) días calendario. Los beneficios ya obtenidos y no vencidos al momento de la terminación podrán redimirse dentro del plazo informado.</p>';
+
+    $b .= '<p><b>12. Contacto</b></p>';
+    $b .= '<p>Para cualquier consulta, reclamación o solicitud relacionada con el programa:</p>';
+    $b .= '<p>Librería Refugios<br>Calle 51 # 48 - 53, local 5, Itagüí (Antioquia)<br>'
+        . 'administracion@refugios.co<br>+57 323 811 39 85<br>'
+        . '<a href="https://www.refugios.co">www.refugios.co</a></p>';
+
+    return $b;
+}
+
+/**
+ * Inserta el programa antes del Anexo 1; si no lo encuentra, al final.
+ */
+function refugios_legal_insert_loyalty($html)
+{
+    if (stripos($html, 'PROGRAMA DE FIDELIZACIÓN') !== false) {
+        return $html; // ya está: no duplicar
+    }
+    $bloque = refugios_loyalty_html();
+
+    $out = preg_replace(
+        '/(<p[^>]*>(?:(?!<\/p>).)*?ANEXO\s*1)/isu',
+        $bloque . '$1',
+        $html,
+        1,
+        $count
+    );
+    if ($count > 0 && $out !== null) return $out;
+
+    return $html . $bloque;
+}
+
+/** Aplica ambas correcciones a un HTML cualquiera. */
+function refugios_legal_transform($html)
+{
+    return refugios_legal_insert_loyalty(refugios_legal_fix_address($html));
+}
+
+/**
+ * Recorre la estructura de Elementor y transforma los widgets de texto.
+ */
+function refugios_legal_walk(array $nodes, &$hits)
+{
+    foreach ($nodes as &$node) {
+        if (isset($node['settings']['editor']) && is_string($node['settings']['editor'])) {
+            $before = $node['settings']['editor'];
+            $after = refugios_legal_transform($before);
+            if ($after !== $before) {
+                $node['settings']['editor'] = $after;
+                $hits++;
+            }
+        }
+        if (!empty($node['elements']) && is_array($node['elements'])) {
+            $node['elements'] = refugios_legal_walk($node['elements'], $hits);
+        }
+    }
+    return $nodes;
+}
+
+/**
+ * Corrida manual (solo administradores): /?refugios_legal_update=1
+ */
+function refugios_legal_update()
+{
+    if (!isset($_GET['refugios_legal_update']) || !current_user_can('manage_options')) return;
+
+    $page_id = REFUGIOS_LEGAL_PAGE_ID;
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<div style="font-family:system-ui;max-width:640px;margin:40px auto;line-height:1.6;">';
+
+    $raw = get_post_meta($page_id, '_elementor_data', true);
+    if (!$raw) {
+        echo '<p>No se encontró _elementor_data en la página ' . (int) $page_id . '.</p></div>';
+        exit;
+    }
+
+    // Respaldo: solo la primera vez, para poder revertir
+    if (!get_post_meta($page_id, '_refugios_legal_backup', true)) {
+        update_post_meta($page_id, '_refugios_legal_backup', wp_slash($raw));
+        echo '<p>Respaldo guardado en el meta <code>_refugios_legal_backup</code>.</p>';
+    }
+
+    $data = json_decode($raw, true);
+    if (!is_array($data)) {
+        echo '<p>No se pudo leer la estructura de Elementor.</p></div>';
+        exit;
+    }
+
+    $hits = 0;
+    $data = refugios_legal_walk($data, $hits);
+
+    if ($hits > 0) {
+        $json = wp_json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        update_post_meta($page_id, '_elementor_data', wp_slash($json));
+
+        // Elementor cachea el CSS/HTML renderizado: hay que regenerarlo
+        if (class_exists('\\Elementor\\Plugin')) {
+            \Elementor\Plugin::$instance->files_manager->clear_cache();
+        }
+        if (has_action('litespeed_purge_all')) do_action('litespeed_purge_all');
+    }
+
+    // El contenido clásico también se corrige, por consistencia de datos
+    $post = get_post($page_id);
+    if ($post && $post->post_content) {
+        $nuevo = refugios_legal_transform($post->post_content);
+        if ($nuevo !== $post->post_content) {
+            wp_update_post(['ID' => $page_id, 'post_content' => wp_slash($nuevo)]);
+        }
+    }
+
+    echo '<p><strong>Widgets de texto actualizados: ' . (int) $hits . '</strong></p>';
+    echo '<p>Dirección corregida y programa de fidelización insertado.</p>';
+    echo '<p><a href="' . esc_url(get_permalink($page_id)) . '">Ver la página →</a></p>';
+    echo '</div>';
+    exit;
+}
+add_action('template_redirect', 'refugios_legal_update');
