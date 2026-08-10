@@ -739,6 +739,19 @@ function refugios_seo_head() {
                             'itemCondition' => 'https://schema.org/NewCondition',
                             'priceValidUntil' => gmdate('Y-m-d', strtotime('+3 months')),
                             'seller'        => ['@id' => $site_url . '#organization'],
+                            // Envío estándar $12.000 a toda Colombia (gratis desde $150.000)
+                            'shippingDetails' => [
+                                '@type' => 'OfferShippingDetails',
+                                'shippingRate' => [
+                                    '@type' => 'MonetaryAmount',
+                                    'value' => 12000,
+                                    'currency' => 'COP',
+                                ],
+                                'shippingDestination' => [
+                                    '@type' => 'DefinedRegion',
+                                    'addressCountry' => 'CO',
+                                ],
+                            ],
                             // Ley de retracto colombiana: 5 días hábiles
                             'hasMerchantReturnPolicy' => [
                                 '@type' => 'MerchantReturnPolicy',
