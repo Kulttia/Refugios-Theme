@@ -1912,11 +1912,13 @@ function refugios_critical_css()
 <style data-no-optimize="1" data-optimized="0" id="refugios-critical">
 .refugios-search-products{list-style:none;margin:0 0 1rem;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem}
 .refugios-search-products>li.product{width:100%;max-width:100%;float:none;margin:0}
-.refugios-product-card__media{display:block;position:relative;aspect-ratio:2/3;overflow:hidden;background:linear-gradient(160deg,#efe0d6,#e2cfc2);padding:.9rem;box-sizing:border-box;border-bottom:2px solid #4e342e}
-.refugios-product-card__media img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;margin:0}
-.woocommerce div.product div.images{max-width:460px;margin-left:auto;margin-right:auto}
-.woocommerce div.product div.images .woocommerce-product-gallery__image{aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;padding:1.5rem;box-sizing:border-box;background:linear-gradient(160deg,#efe0d6,#e2cfc2)}
-.woocommerce div.product div.images .woocommerce-product-gallery__image img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;border:none}
+.refugios-product-card__media{display:block!important;position:relative!important;aspect-ratio:2/3!important;overflow:hidden!important;background:linear-gradient(160deg,#efe0d6,#e2cfc2)!important;padding:.9rem!important;box-sizing:border-box!important;border-bottom:2px solid #4e342e!important}
+.refugios-product-card__media img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;display:block!important;margin:0!important}
+.woocommerce div.product div.images{max-width:460px!important;margin-left:auto!important;margin-right:auto!important}
+.woocommerce div.product div.images .woocommerce-product-gallery__image{aspect-ratio:2/3!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:1.5rem!important;box-sizing:border-box!important;background:linear-gradient(160deg,#efe0d6,#e2cfc2)!important;overflow:hidden!important}
+.woocommerce div.product div.images .woocommerce-product-gallery__image a{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important}
+.woocommerce div.product div.images .woocommerce-product-gallery__image img,.woocommerce div.product div.images .woocommerce-product-gallery__image a img{width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;border:none!important}
+.woocommerce span.onsale,.woocommerce div.product span.onsale{position:absolute!important;top:.9rem!important;left:.9rem!important;right:auto!important;z-index:30!important;margin:0!important;display:inline-block!important;background:#d9a066!important;color:#4e342e!important;border:2px solid #4e342e!important;box-shadow:2px 2px 0 #4e342e!important;border-radius:0!important;font-family:Montserrat,Arial,sans-serif!important;font-size:.8rem!important;font-weight:800!important;letter-spacing:.08em!important;line-height:1!important;min-width:0!important;min-height:0!important;width:auto!important;height:auto!important;padding:.45rem .6rem!important;text-align:center!important}
 @media(max-width:1024px){.refugios-search-products{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:767px){
 .refugios-search-products{grid-template-columns:repeat(2,1fr);gap:.75rem}
