@@ -1896,3 +1896,36 @@ function refugios_placeholder_img($html, $size, $dimensions)
     );
 }
 add_filter('woocommerce_placeholder_img', 'refugios_placeholder_img', 20, 3);
+
+/* =========================================================
+ 21. ESTILOS CRÍTICOS A PRUEBA DE OPTIMIZADORES
+ LiteSpeed genera un CSS "único" que descarta reglas que
+ cree no usadas; cuando ese archivo queda viejo, las cards
+ de búsqueda pierden su grilla y una portada ocupa toda la
+ pantalla. Estas reglas viajan inline y marcadas para que
+ el optimizador no las toque.
+ ========================================================= */
+
+function refugios_critical_css()
+{
+    ?>
+<style data-no-optimize="1" data-optimized="0" id="refugios-critical">
+.refugios-search-products{list-style:none;margin:0 0 1rem;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem}
+.refugios-search-products>li.product{width:100%;max-width:100%;float:none;margin:0}
+.refugios-product-card__media{display:block;position:relative;aspect-ratio:2/3;overflow:hidden;background:linear-gradient(160deg,#efe0d6,#e2cfc2);padding:.9rem;box-sizing:border-box;border-bottom:2px solid #4e342e}
+.refugios-product-card__media img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;margin:0}
+.woocommerce div.product div.images{max-width:460px;margin-left:auto;margin-right:auto}
+.woocommerce div.product div.images .woocommerce-product-gallery__image{aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;padding:1.5rem;box-sizing:border-box;background:linear-gradient(160deg,#efe0d6,#e2cfc2)}
+.woocommerce div.product div.images .woocommerce-product-gallery__image img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;border:none}
+@media(max-width:1024px){.refugios-search-products{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:767px){
+.refugios-search-products{grid-template-columns:repeat(2,1fr);gap:.75rem}
+.refugios-product-card__media{aspect-ratio:3/4;padding:.75rem}
+.woocommerce div.product div.images{max-width:100%}
+.woocommerce div.product div.images .woocommerce-product-gallery__image{aspect-ratio:3/4;padding:1rem}
+}
+@media(max-width:420px){.refugios-search-products{grid-template-columns:1fr}}
+</style>
+    <?php
+}
+add_action('wp_head', 'refugios_critical_css', 99);
