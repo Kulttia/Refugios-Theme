@@ -1938,3 +1938,17 @@ function refugios_critical_css()
     <?php
 }
 add_action('wp_head', 'refugios_critical_css', 99);
+
+/**
+ * La hoja del tema nunca entra al combinado de LiteSpeed.
+ * Cuando entraba, cualquier cambio nuevo quedaba fuera hasta que se
+ * regenerara el archivo optimizado, y la tienda perdía sus botones.
+ */
+function refugios_no_optimize_style($tag, $handle)
+{
+    if (in_array($handle, ['refugios-style-v5', 'refugios-tailwind'], true)) {
+        $tag = str_replace('<link ', '<link data-no-optimize="1" data-optimized="0" ', $tag);
+    }
+    return $tag;
+}
+add_filter('style_loader_tag', 'refugios_no_optimize_style', 20, 2);
