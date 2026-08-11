@@ -1666,9 +1666,15 @@ const REFUGIOS_LEGAL_PAGE_ID = 3022;
 /** Dirección correcta del establecimiento (responsable del tratamiento). */
 function refugios_legal_fix_address($html)
 {
+    // Segunda pasada: completa la dirección ya reemplazada con el centro comercial
+    $html = preg_replace(
+        '/Calle 51 # 48 (?:-|&#8211;|–) 53, local 5, Itagüí \(Antioquia\)/u',
+        'Calle 51 # 48 - 53, local 5, Centro Comercial La Gran Manzana, Itagüí (Antioquia)',
+        $html
+    );
     return preg_replace(
         '/Carrera\s*50\s*a?\s*#?\s*76\s*sur\s*111(\s*ITAGUI\s*\(ANT\)\.?)?/iu',
-        'Calle 51 # 48 - 53, local 5, Itagüí (Antioquia)',
+        'Calle 51 # 48 - 53, local 5, Centro Comercial La Gran Manzana, Itagüí (Antioquia)',
         $html
     );
 }
@@ -1726,7 +1732,7 @@ function refugios_loyalty_html()
 
     $b .= '<p><b>12. Contacto</b></p>';
     $b .= '<p>Para cualquier consulta, reclamación o solicitud relacionada con el programa:</p>';
-    $b .= '<p>Librería Refugios<br>Calle 51 # 48 - 53, local 5, Itagüí (Antioquia)<br>'
+    $b .= '<p>Librería Refugios<br>Calle 51 # 48 - 53, local 5, Centro Comercial La Gran Manzana, Itagüí (Antioquia)<br>'
         . 'administracion@refugios.co<br>+57 323 811 39 85<br>'
         . '<a href="https://www.refugios.co">www.refugios.co</a></p>';
 

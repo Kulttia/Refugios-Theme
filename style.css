@@ -4,7 +4,7 @@ Theme URI: https://refugios.com
 Author: Kulttia Lab
 Author URI: https://kulttia.com/
 Description: Tema brutalista suizo-retro para Refugios, librería y cafetería especializada. Diseñado para WordPress + WooCommerce con Elementor.
-Version: 3.12.0
+Version: 3.13.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
@@ -8218,4 +8218,127 @@ a.add_to_wishlist i {
   .refugios-legal-table { font-size: 0.82rem; }
   .refugios-legal-table th,
   .refugios-legal-table td { padding: 0.5rem 0.55rem; }
+}
+
+/* =============================================
+   v3.13.0 — ESTÁNDAR ÚNICO DE PORTADA DE LIBRO
+   Misma proporción y encuadre en miniaturas, vistas
+   previas y página de producto. Portada completa
+   (nunca recortada) sobre fondo papel.
+   ============================================= */
+:root {
+  --book-frame: 2 / 3;
+  --book-paper: linear-gradient(160deg, #efe0d6, #e2cfc2);
+  --book-shadow: drop-shadow(4px 6px 10px rgba(78, 52, 46, 0.28));
+}
+
+/* ---------- 1. Página de producto ---------- */
+.woocommerce div.product div.images .woocommerce-product-gallery__wrapper,
+.woocommerce div.product div.images .woocommerce-product-gallery__image {
+  background: var(--book-paper) !important;
+}
+
+.woocommerce div.product div.images .woocommerce-product-gallery__image {
+  aspect-ratio: var(--book-frame) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1.5rem !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.woocommerce div.product div.images .woocommerce-product-gallery__image a,
+.woocommerce div.product div.images .woocommerce-product-gallery__image > a {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.woocommerce div.product div.images .woocommerce-product-gallery__image img,
+.woocommerce div.product div.images .woocommerce-product-gallery__image a img {
+  width: auto !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  border: none !important;
+  filter: var(--book-shadow);
+}
+
+/* La columna de imagen no debe crecer sin límite en pantallas grandes */
+.woocommerce div.product div.images {
+  max-width: 460px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Miniaturas de la galería: mismo marco, más pequeñas */
+.woocommerce div.product div.images .flex-control-thumbs li img,
+.woocommerce div.product .flex-control-thumbs img {
+  aspect-ratio: var(--book-frame) !important;
+  object-fit: contain !important;
+  background: var(--book-paper) !important;
+  padding: 0.3rem !important;
+  box-sizing: border-box !important;
+}
+
+/* ---------- 2. Miniaturas del blog (listado) ---------- */
+.blog-article-row__image {
+  background: var(--book-paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem;
+  box-sizing: border-box;
+}
+
+.blog-article-row__image img {
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 260px !important;
+  object-fit: contain !important;
+  min-height: 0 !important;
+  filter: var(--book-shadow);
+}
+
+/* Tarjetas de blog en grilla (home y relacionados) */
+.blog-card__image {
+  background: var(--book-paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  box-sizing: border-box;
+}
+
+.blog-card__image img {
+  width: auto !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  filter: var(--book-shadow);
+}
+
+/* ---------- 3. Móvil ---------- */
+@media (max-width: 767px) {
+  .woocommerce div.product div.images {
+    max-width: 100% !important;
+  }
+
+  .woocommerce div.product div.images .woocommerce-product-gallery__image {
+    aspect-ratio: 3 / 4 !important;
+    padding: 1rem !important;
+  }
+
+  .blog-article-row__image {
+    padding: 0.65rem;
+  }
+
+  .blog-article-row__image img {
+    max-height: 200px !important;
+  }
 }
