@@ -1924,6 +1924,15 @@ function refugios_critical_css()
 .woocommerce div.product div.images{max-width:100%}
 .woocommerce div.product div.images .woocommerce-product-gallery__image{aspect-ratio:3/4;padding:1rem}
 }
+.refugios-product-card__actions{display:flex;gap:.5rem;align-items:stretch;position:relative}
+.refugios-card-buy{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;background:#d9a066;color:#4e342e;border:2px solid #4e342e;font-family:Montserrat,Arial,sans-serif;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.75rem;text-decoration:none;cursor:pointer;position:relative;z-index:10;box-sizing:border-box}
+.refugios-card-buy:hover{background:#4e342e;color:#f5e9e2;box-shadow:3px 3px 0 #4e342e}
+.refugios-card-wa{display:inline-flex;align-items:center;justify-content:center;width:2.9rem;min-width:2.9rem;background:#f5e9e2;color:#4e342e;border:2px solid #4e342e;font-size:1.15rem;text-decoration:none;position:relative;z-index:10;box-sizing:border-box}
+.refugios-card-wa:hover{background:#25d366;color:#fff;border-color:#4e342e}
+.refugios-product-card__actions .added_to_cart{position:absolute;inset:auto 0 -1.6rem 0;font-family:Montserrat,Arial,sans-serif;font-size:.68rem;font-weight:700;text-transform:uppercase;color:#4e342e;text-align:center;z-index:10}
+.refugios-product-card__media .onsale{position:absolute;top:.7rem;left:.7rem;right:auto;z-index:5;margin:0;display:inline-block;background:#d9a066;color:#4e342e;border:2px solid #4e342e;box-shadow:2px 2px 0 #4e342e;border-radius:0;font-family:Montserrat,Arial,sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.08em;line-height:1;min-width:0;min-height:0;height:auto;padding:.35rem .5rem;text-align:center}
+.refugios-product-card__price ins{text-decoration:none;border-bottom:none}
+.refugios-product-card__price del{font-size:.9rem;color:rgba(78,52,46,.55);text-decoration:line-through;margin-right:.45rem}
 @media(max-width:420px){.refugios-search-products{grid-template-columns:1fr}}
 </style>
     <?php
