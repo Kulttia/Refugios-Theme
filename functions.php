@@ -1847,3 +1847,52 @@ function refugios_legal_update()
     exit;
 }
 add_action('template_redirect', 'refugios_legal_update');
+
+/* =========================================================
+ 20. PORTADA DE RESPALDO PROPIA
+ El "No photo" genérico de WooCommerce rompe la estética.
+ Se reemplaza por un lomo de libro dibujado en SVG, con los
+ colores de la marca. Sin archivos: viaja como data URI.
+ ========================================================= */
+
+function refugios_placeholder_svg()
+{
+    $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600">'
+        . '<rect width="400" height="600" fill="#efe0d6"/>'
+        // Cuerpo del libro
+        . '<rect x="112" y="130" width="176" height="250" rx="3" fill="none" stroke="#4e342e" stroke-width="7"/>'
+        // Lomo
+        . '<line x1="150" y1="130" x2="150" y2="380" stroke="#4e342e" stroke-width="5"/>'
+        // Renglones
+        . '<line x1="175" y1="195" x2="258" y2="195" stroke="#d9a066" stroke-width="7" stroke-linecap="round"/>'
+        . '<line x1="175" y1="230" x2="240" y2="230" stroke="#d9a066" stroke-width="7" stroke-linecap="round"/>'
+        . '<line x1="175" y1="265" x2="252" y2="265" stroke="#d9a066" stroke-width="7" stroke-linecap="round"/>'
+        // Marcador
+        . '<path d="M236 130 v70 l17-15 17 15 v-70 z" fill="#d9a066" stroke="#4e342e" stroke-width="5" stroke-linejoin="round"/>'
+        // Texto
+        . '<text x="200" y="440" text-anchor="middle" font-family="Georgia, serif" font-size="27" fill="#4e342e">Refugios</text>'
+        . '<text x="200" y="472" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" letter-spacing="2" fill="#a98d80">PORTADA EN CAMINO</text>'
+        . '</svg>';
+
+    return 'data:image/svg+xml;charset=utf-8,' . rawurlencode($svg);
+}
+
+function refugios_placeholder_src($src)
+{
+    return refugios_placeholder_svg();
+}
+add_filter('woocommerce_placeholder_img_src', 'refugios_placeholder_src', 20);
+
+function refugios_placeholder_img($html, $size, $dimensions)
+{
+    $w = is_array($dimensions) && !empty($dimensions['width']) ? (int) $dimensions['width'] : 400;
+    $h = is_array($dimensions) && !empty($dimensions['height']) ? (int) $dimensions['height'] : 600;
+    return sprintf(
+        '<img src="%s" alt="%s" width="%d" height="%d" class="woocommerce-placeholder wp-post-image" />',
+        esc_attr(refugios_placeholder_svg()),
+        esc_attr__('Portada aún no disponible', 'refugios'),
+        $w,
+        $h
+    );
+}
+add_filter('woocommerce_placeholder_img', 'refugios_placeholder_img', 20, 3);
