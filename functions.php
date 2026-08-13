@@ -751,6 +751,32 @@ function refugios_seo_head() {
                                     '@type' => 'DefinedRegion',
                                     'addressCountry' => 'CO',
                                 ],
+                                // Alistamiento 1-2 días hábiles + tránsito 2-5 días hábiles
+                                'deliveryTime' => [
+                                    '@type' => 'ShippingDeliveryTime',
+                                    'handlingTime' => [
+                                        '@type'    => 'QuantitativeValue',
+                                        'minValue' => 1,
+                                        'maxValue' => 2,
+                                        'unitCode' => 'DAY',
+                                    ],
+                                    'transitTime' => [
+                                        '@type'    => 'QuantitativeValue',
+                                        'minValue' => 2,
+                                        'maxValue' => 5,
+                                        'unitCode' => 'DAY',
+                                    ],
+                                    'businessDays' => [
+                                        '@type'      => 'OpeningHoursSpecification',
+                                        'dayOfWeek'  => [
+                                            'https://schema.org/Monday',
+                                            'https://schema.org/Tuesday',
+                                            'https://schema.org/Wednesday',
+                                            'https://schema.org/Thursday',
+                                            'https://schema.org/Friday',
+                                        ],
+                                    ],
+                                ],
                             ],
                             // Ley de retracto colombiana: 5 días hábiles
                             'hasMerchantReturnPolicy' => [
