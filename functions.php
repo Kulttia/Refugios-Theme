@@ -544,7 +544,8 @@ function refugios_customize_register($wp_customize)
 
     $contact_fields = [
         'refugios_address' => ['label' => 'Dirección', 'default' => 'Calle de los Libros 42, Ciudad'],
-        'refugios_hours' => ['label' => 'Horario', 'default' => 'Lun–Vie: 8:00–20:00 / Sáb–Dom: 9:00–21:00'],
+        'refugios_hours' => ['label' => 'Horario', 'default' => 'Lunes a viernes: 10:00–20:00 / Domingos: 12:00–18:00 (cada 15 días)'],
+        'refugios_footer_tagline' => ['label' => 'Tagline del footer', 'default' => 'Un espacio para la pausa.'],
         'refugios_phone' => ['label' => 'Teléfono / WhatsApp', 'default' => '+1 (555) 123-4567'],
         'refugios_email' => ['label' => 'Email', 'default' => 'hola@refugios.com'],
         'refugios_instagram' => ['label' => 'Instagram URL', 'default' => 'https://instagram.com/refugios'],
@@ -687,9 +688,9 @@ function refugios_seo_head() {
                     ],
                     'openingHoursSpecification' => [[
                         '@type'     => 'OpeningHoursSpecification',
-                        'dayOfWeek' => ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+                        'dayOfWeek' => ['Monday','Tuesday','Wednesday','Thursday','Friday'],
                         'opens'     => '10:00',
-                        'closes'    => '19:00',
+                        'closes'    => '20:00',
                     ]],
                     'sameAs' => [$instagram, $facebook, $tiktok],
                 ],

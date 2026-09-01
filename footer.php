@@ -24,8 +24,8 @@ echo '<span>' . esc_html(mb_substr($blog_name, 0, 1)) . '</span>'
                     </div>
                     <p class="footer-brand__tagline">
                         <?php echo esc_html(get_theme_mod(
-    'refugios_hero_subtitle',
-    'Un refugio para libros, ideas y café de especialidad.'
+    'refugios_footer_tagline',
+    'Un espacio para la pausa.'
 )); ?>
                     </p>
                     <div class="footer-social">
@@ -91,7 +91,7 @@ endif; ?>
 
                     <div class="footer-contact-item">
                         <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                        <span>Medellín, Colombia<br>Lunes a Sábado &middot; 10 am &ndash; 7 pm</span>
+                        <span>Medellín, Colombia<br>Lunes a viernes &middot; 10 am &ndash; 8 pm<br>Domingos &middot; 12 m &ndash; 6 pm (cada 15 días)</span>
                     </div>
 
                     <div class="footer-contact-item">

@@ -57,7 +57,7 @@ get_header(); ?>
                             <div>
                                 <div class="contact-info-label"><?php esc_html_e('Horario', 'refugios'); ?></div>
                                 <div class="contact-info-value">
-                                    Lunes a Sábado &middot; 10 am &ndash; 7 pm
+                                    Lunes a viernes &middot; 10 am &ndash; 8 pm<br>Domingos &middot; 12 m &ndash; 6 pm (cada 15 días)
                                 </div>
                             </div>
                         </div>
