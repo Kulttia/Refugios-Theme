@@ -91,7 +91,7 @@ endif; ?>
 
                     <div class="footer-contact-item">
                         <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                        <span>Medellín, Colombia<br>Lunes a viernes &middot; 10 am &ndash; 8 pm<br>Domingos &middot; 12 m &ndash; 6 pm (cada 15 días)</span>
+                        <span>Medellín, Colombia<br>Lunes a sábado &middot; 10 am &ndash; 8 pm<br>Domingos &middot; 12 m &ndash; 6 pm (cada 15 días)</span>
                     </div>
 
                     <div class="footer-contact-item">
