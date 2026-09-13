@@ -4,7 +4,7 @@ Theme URI: https://refugios.com
 Author: Kulttia Lab
 Author URI: https://kulttia.com/
 Description: Tema brutalista suizo-retro para Refugios, librería y cafetería especializada. Diseñado para WordPress + WooCommerce con Elementor.
-Version: 3.14.8
+Version: 3.15.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
@@ -5893,150 +5893,455 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 /* =============================================
-   PÁGINA: MANIFIESTOS (page-id-14078) - RESTYLING
+   PÁGINA: QUIÉNES SOMOS (page-quienes-somos.php)
+   Lectura larga por bloques, columna angosta.
    ============================================= */
 
-/* Headings Base */
-.page-id-14078 h1.page-header__title,
-.page-id-14078 h2.elementor-heading-title {
-  color: var(--color-brown) !important;
-  font-family: var(--font-serif) !important;
-  font-weight: 700 !important;
-  line-height: 1.1 !important;
+.qs-narrow {
+  max-width: 820px;
 }
 
-.page-id-14078 h3,
-.page-id-14078 h4 {
-  color: var(--color-brown) !important;
-  font-family: var(--font-sans) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
-  font-weight: 700 !important;
+.qs-intro {
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
 }
 
-/* Textos Generales (Párrafos y spans) */
-.page-id-14078 .elementor-widget-text-editor,
-.page-id-14078 p,
-.page-id-14078 span {
-  color: var(--color-brown) !important;
-  font-family: var(--font-body) !important;
-  line-height: 1.7 !important;
+.qs-statement {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--color-brown);
+  margin-bottom: 1.5rem;
 }
 
-/* Permitir que el fondo del sitio mande (cream) en las secciones mayores */
-.page-id-14078 .elementor-section {
-  background-color: transparent !important;
+.qs-lead {
+  font-family: var(--font-body);
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.65;
+  color: rgba(78, 52, 46, 0.85);
+  margin-bottom: 2.5rem;
 }
 
-/* Espaciado para despegar las tarjetas entre sí */
-.page-id-14078 .elementor-inner-section .elementor-inner-column {
-  padding: 1rem !important;
+.qs-purpose {
+  display: inline-block;
+  max-width: 100%;
+  border: var(--border-md);
+  border-left: 10px solid var(--color-amber);
+  background: var(--color-white);
+  box-shadow: var(--shadow-brutal);
+  padding: 1.5rem 2rem;
 }
 
-/* Estilo para los Cuadros de cada Manifiesto — Diseño Cuadrado Brutalista */
-.page-id-14078 .elementor-inner-section .elementor-inner-column .elementor-widget-wrap {
-  background-color: var(--color-cream) !important;
-  border: var(--border-md) !important;
-  padding: 2rem 1.5rem !important; /* Padding ajustado para balancear texto */
-  box-shadow: var(--shadow-amber) !important;
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease !important;
-  height: 100% !important; /* Dejar que Elementor maneje la altura del grid */
-  min-height: 360px !important;
-  border-radius: 12px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: center !important; /* Crítico para centrar widgets hijos */
-  text-align: center !important;
-  box-sizing: border-box !important;
+.qs-purpose__label {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-amber);
+  margin-bottom: 0.5rem;
 }
 
-/* Forzar que cada widget interno herede el centrado y no desborde */
-.page-id-14078 .elementor-inner-column .elementor-widget {
-  width: 100% !important;
-  max-width: 100% !important;
-  margin-bottom: 0 !important;
+.qs-purpose__text {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-brown);
 }
 
-/* Hover effect: Elevación brutalista */
-.page-id-14078 .elementor-inner-section .elementor-inner-column .elementor-widget-wrap:hover {
-  transform: translate(-5px, -5px) !important;
-  box-shadow: 8px 8px 0 var(--color-brown) !important;
-  border-color: var(--color-brown) !important;
+.qs-body {
+  border-top: var(--border-md);
+  border-bottom: var(--border-md);
+  background: var(--color-white);
 }
 
-/* Títulos y textos dentro de los manifiestos */
-.page-id-14078 .elementor-widget-heading h2 {
-  font-family: var(--font-serif) !important;
-  font-size: 1.625rem !important;
-  color: var(--color-brown) !important;
-  margin-bottom: 0.75rem !important;
-  width: 100%;
+.qs-prose p {
+  font-family: var(--font-body);
+  font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
+  line-height: 1.75;
+  color: rgba(78, 52, 46, 0.9);
+  margin-bottom: 1.5rem;
 }
 
-.page-id-14078 .elementor-widget-text-editor {
-  width: 100%;
+.qs-prose p:first-child::first-letter {
+  font-family: var(--font-serif);
+  font-size: 3.2em;
+  font-weight: 700;
+  float: left;
+  line-height: 0.85;
+  margin: 0.08em 0.15em 0 0;
+  color: var(--color-amber);
 }
 
-.page-id-14078 .elementor-widget-text-editor p {
-  font-family: var(--font-body) !important;
-  font-size: 0.9375rem !important; /* Un poco más pequeño para asegurar que quepa en el cuadrado */
-  line-height: 1.5 !important;
-  margin: 0 !important;
+.qs-principles__grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: var(--border-md);
+  box-shadow: var(--shadow-amber);
+  background: var(--color-cream);
+  margin: 1.5rem 0 2rem;
 }
 
-/* --- SLIDER DE FLASHCARDS EN MÓVIL --- */
+.qs-principle {
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.25rem, 2.5vw, 2rem);
+  border-right: var(--border-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.qs-principle:last-child {
+  border-right: 0;
+}
+
+.qs-principle__num {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--color-amber);
+}
+
+.qs-principle__word {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 3.5vw, 3rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-brown);
+}
+
+.qs-principles__text {
+  font-family: var(--font-body);
+  font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
+  line-height: 1.7;
+  color: rgba(78, 52, 46, 0.9);
+}
+
+.qs-questions {
+  background: var(--color-brown);
+  color: var(--color-cream);
+}
+
+.qs-questions__title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  color: var(--color-cream);
+  margin-bottom: 2rem;
+}
+
+.qs-questions__list {
+  list-style: none;
+  counter-reset: qs-q;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid rgba(245, 233, 226, 0.25);
+}
+
+.qs-questions__list li {
+  counter-increment: qs-q;
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid rgba(245, 233, 226, 0.25);
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-cream);
+}
+
+.qs-questions__list li::before {
+  content: counter(qs-q, decimal-leading-zero);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--color-amber);
+}
+
+.qs-next__box {
+  border: var(--border-md);
+  background: var(--color-amber);
+  box-shadow: var(--shadow-brutal);
+  padding: clamp(2rem, 5vw, 4rem);
+  text-align: center;
+}
+
+.qs-next__label {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-brown);
+  margin-bottom: 1rem;
+}
+
+.qs-next__title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  line-height: 1.12;
+  color: var(--color-brown);
+  max-width: 760px;
+  margin-inline: auto;
+  margin-bottom: 0.75rem;
+}
+
+.qs-next__text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+  color: var(--color-brown);
+  margin-bottom: 2rem;
+}
+
+.qs-next__btn {
+  background: var(--color-brown);
+  color: var(--color-cream);
+  border-color: var(--color-brown);
+  box-shadow: 4px 4px 0 var(--color-cream);
+}
+
 @media (max-width: 768px) {
-  /* Forzar contenedor de columnas a ser un flex row con scroll horizontal */
-  .page-id-14078 .elementor-inner-section > .elementor-container {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scroll-snap-type: x mandatory !important;
-    scroll-behavior: smooth;
-    gap: 1.25rem !important;
-    padding: 1.5rem !important;
-    padding-bottom: 3.5rem !important; /* Espacio crítico para que se vea la sombra inferior */
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+  .qs-principles__grid {
+    grid-template-columns: 1fr;
   }
 
-  .page-id-14078 .elementor-inner-section > .elementor-container::-webkit-scrollbar {
-    display: none;
+  .qs-principle {
+    border-right: 0;
+    border-bottom: var(--border-md);
   }
 
-  /* Cada columna se comporta como una flashcard */
-  .page-id-14078 .elementor-inner-section .elementor-inner-column {
-    flex: 0 0 82% !important; /* Ancho que permite ver un poco de la siguiente tarjeta */
-    max-width: 82% !important;
-    scroll-snap-align: center !important;
-    padding: 0 !important;
-    height: auto !important;
+  .qs-principle:last-child {
+    border-bottom: 0;
   }
 
-  /* Ajuste de la tarjeta interna en móvil */
-  .page-id-14078 .elementor-inner-section .elementor-inner-column .elementor-widget-wrap {
-    aspect-ratio: 4 / 5 !important; /* Proporción de flashcard vertical en móvil */
-    border-radius: 16px !important;
-    min-height: 440px !important;
-    padding: 2.25rem 1.5rem !important;
-    justify-content: flex-start !important; /* Alineación superior para leer mejor el texto largo */
-    box-shadow: 6px 6px 0 var(--color-amber) !important;
-  }
-
-  /* Asegurar que la sección principal no corte las sombras y reducir espacio entre bloques */
-  .page-id-14078 .elementor-inner-section {
-    overflow: visible !important;
-    margin-bottom: -1rem !important; /* Acercar los sliders si hay varios */
+  .qs-questions__list li {
+    grid-template-columns: 2.5rem 1fr;
   }
 }
 
+@media (max-width: 480px) {
+  .qs-purpose {
+    display: block;
+    padding: 1.25rem 1.25rem;
+    border-left-width: 8px;
+  }
 
-/* Margen interna de textos dentro de los cuadros de manifiesto para que no toquen el borde */
-.page-id-14078 .elementor-inner-column .elementor-widget-heading {
-  margin-bottom: 1rem !important;
+  .qs-prose p:first-child::first-letter {
+    font-size: 2.6em;
+  }
+
+  .qs-next__box {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .qs-next__btn {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+  }
+}
+
+/* =============================================
+   PÁGINA: MANIFIESTOS (page-manifiestos.php)
+   Seis posturas como tarjetas brutalistas.
+   ============================================= */
+
+.mf-intro {
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.mf-intro__title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--color-brown);
+  max-width: 14ch;
+  margin-bottom: 1.25rem;
+}
+
+.mf-intro__text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  color: var(--color-amber);
+}
+
+.mf-list {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.mf-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.mf-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-height: 380px;
+  padding: clamp(1.75rem, 3vw, 2.75rem);
+  border: var(--border-md);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-amber);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mf-card:nth-child(even) {
+  background: var(--color-white);
+}
+
+.mf-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 8px 8px 0 var(--color-brown);
+}
+
+.mf-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: var(--border-md);
+}
+
+.mf-card__num {
+  order: 2;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--color-amber);
+}
+
+.mf-card__word {
+  order: 1;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--color-brown);
+  line-height: 1;
+}
+
+.mf-card__statement {
+  font-family: var(--font-serif);
+  font-size: clamp(1.625rem, 2.6vw, 2.375rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--color-brown);
+  margin: 0;
+}
+
+.mf-card__action {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.3vw, 1.125rem);
+  line-height: 1.65;
+  color: rgba(78, 52, 46, 0.88);
+  margin: auto 0 0;
+  padding-left: 1.25rem;
+  border-left: 4px solid var(--color-amber);
+}
+
+.mf-close__box {
+  border: var(--border-md);
+  background: var(--color-brown);
+  box-shadow: var(--shadow-amber);
+  padding: clamp(2rem, 5vw, 4rem);
+  text-align: center;
+}
+
+.mf-close__label {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-amber);
+  margin-bottom: 1rem;
+}
+
+.mf-close__title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  line-height: 1.05;
+  color: var(--color-cream);
+  margin-bottom: 2rem;
+}
+
+.mf-close__actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mf-close__actions .btn-secondary {
+  color: var(--color-cream);
+  border-color: var(--color-cream);
+  box-shadow: 4px 4px 0 var(--color-amber);
+}
+
+.mf-close__actions .btn-secondary:hover {
+  background: var(--color-cream);
+  color: var(--color-brown);
+}
+
+@media (max-width: 860px) {
+  .mf-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mf-card {
+    min-height: 0;
+  }
+
+  .mf-intro__title {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .mf-card {
+    padding: 1.5rem 1.25rem;
+    gap: 1rem;
+    box-shadow: 3px 3px 0 var(--color-amber);
+  }
+
+  .mf-card:hover {
+    transform: none;
+    box-shadow: 3px 3px 0 var(--color-amber);
+  }
+
+  .mf-card__statement {
+    font-size: 1.5rem;
+  }
+
+  .mf-close__box {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .mf-close__actions .btn {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+  }
 }
 
 /* =============================================
