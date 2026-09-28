@@ -2068,7 +2068,42 @@ function refugios_devol_is_on_sale($on_sale, $product)
 {
     return refugios_devol_price($product) !== null ? true : $on_sale;
 }
-add_filter('woocommerce_product_is_on_sale', 'refugios_devol_is_on_sale', 999, 2);
+add_filter('woocommerce_product_is_on_sale', 'refugios_devol_is_on_sale', PHP_INT_MAX, 2);
+
+/**
+ * Precio tachado + precio de devolución. Va aparte de is_on_sale porque
+ * un plugin de la tienda lo vuelve a poner en false después del tema.
+ */
+function refugios_devol_price_html($html, $product)
+{
+    $devol = refugios_devol_price($product);
+    if ($devol === null) {
+        return $html;
+    }
+    $regular = wc_get_price_to_display($product, ['price' => $product->get_regular_price()]);
+    $sale = wc_get_price_to_display($product, ['price' => $devol]);
+    return wc_format_sale_price($regular, $sale) . $product->get_price_suffix();
+}
+add_filter('woocommerce_get_price_html', 'refugios_devol_price_html', PHP_INT_MAX, 2);
+
+/** Insignia "-15%" de la lista de devoluciones, o '' si no aplica. */
+function refugios_devol_flash($product)
+{
+    if (refugios_devol_price($product) === null) {
+        return '';
+    }
+    return '<span class="onsale">-' . (int) refugios_devol_config()['descuento'] . '%</span>';
+}
+
+/** En la ficha del libro, la insignia sale aunque is_on_sale diga que no. */
+function refugios_devol_single_flash()
+{
+    global $product;
+    if ($product && !$product->is_on_sale()) {
+        echo wp_kses_post(refugios_devol_flash($product));
+    }
+}
+add_action('woocommerce_before_single_product_summary', 'refugios_devol_single_flash', 10);
 
 /** Ruta /devoluciones/ sin depender de una página creada en el administrador. */
 function refugios_devol_rewrite()
