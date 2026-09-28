@@ -1,0 +1,207 @@
+{
+  "_nota": "Libros de Plaza y Janés con nota A− en Nodux (candidatos a devolución), 28 sep 2026. El descuento se calcula sobre el precio regular que sincroniza Nodux. Para quitar un libro, bórralo de la lista; para cerrar la campaña, pon una fecha en \"hasta\" (AAAA-MM-DD, último día incluido) o vacía la lista.",
+  "descuento": 15,
+  "hasta": null,
+  "productos": [
+    {
+      "id": 17617,
+      "isbn": "9788494230585",
+      "titulo": "¡Que viene el lobo!"
+    },
+    {
+      "id": 17619,
+      "isbn": "9788417766948",
+      "titulo": "¡Yo primero!"
+    },
+    {
+      "id": 17625,
+      "isbn": "9788491012344",
+      "titulo": "¿Por qué?"
+    },
+    {
+      "id": 17641,
+      "isbn": "9788483932872",
+      "titulo": "Al final del miedo"
+    },
+    {
+      "id": 17659,
+      "isbn": "9788415618713",
+      "titulo": "Alicia en el pais de las maravillas Alma Clásicos"
+    },
+    {
+      "id": 17661,
+      "isbn": "9788418359668",
+      "titulo": "Amarilla"
+    },
+    {
+      "id": 17677,
+      "isbn": "9788419599094",
+      "titulo": "Ana de tejas verdes Alma Pocket"
+    },
+    {
+      "id": 17687,
+      "isbn": "9789585653764",
+      "titulo": "Antonia va al rio"
+    },
+    {
+      "id": 17698,
+      "isbn": "9788410206588",
+      "titulo": "Ardiente secreto"
+    },
+    {
+      "id": 17700,
+      "isbn": "9788418933684",
+      "titulo": "Así habló Zaratustra Alma Clásicos"
+    },
+    {
+      "id": 17740,
+      "isbn": "9789585300552",
+      "titulo": "Chimichimitos"
+    },
+    {
+      "id": 17742,
+      "isbn": "9788498711578",
+      "titulo": "Cocorico"
+    },
+    {
+      "id": 17779,
+      "isbn": "9788417430740",
+      "titulo": "Cuentos de Andersen"
+    },
+    {
+      "id": 17809,
+      "isbn": "9788427299627",
+      "titulo": "Diario de Greg 1. English Learner’s Edition"
+    },
+    {
+      "id": 17891,
+      "isbn": "9788483931448",
+      "titulo": "El matrimonio de los peces rojos"
+    },
+    {
+      "id": 17899,
+      "isbn": "9788483930892",
+      "titulo": "El mundo de las cabezas vacías"
+    },
+    {
+      "id": 17934,
+      "isbn": "9788496646421",
+      "titulo": "El rey y el mar"
+    },
+    {
+      "id": 17984,
+      "isbn": "9788483932698",
+      "titulo": "Ese verano a oscuras"
+    },
+    {
+      "id": 17608,
+      "isbn": "9788419599193",
+      "titulo": "Flush"
+    },
+    {
+      "id": 18026,
+      "isbn": "9788417430108",
+      "titulo": "Heidi"
+    },
+    {
+      "id": 18103,
+      "isbn": "PJ9789585653757",
+      "titulo": "La gallina y el monstruo"
+    },
+    {
+      "id": 18158,
+      "isbn": "9788483932247",
+      "titulo": "La respiración Cavernaria"
+    },
+    {
+      "id": 18168,
+      "isbn": "9788483932636",
+      "titulo": "La tristeza de los cítricos"
+    },
+    {
+      "id": 18174,
+      "isbn": "9788483933008",
+      "titulo": "La vía del futuro"
+    },
+    {
+      "id": 18202,
+      "isbn": "9788418395567",
+      "titulo": "Las Olas"
+    },
+    {
+      "id": 18275,
+      "isbn": "9788419599988",
+      "titulo": "Los ojos del hermano eterno"
+    },
+    {
+      "id": 18317,
+      "isbn": "9788419599834",
+      "titulo": "Miedo"
+    },
+    {
+      "id": 18349,
+      "isbn": "9788496646704",
+      "titulo": "Oveja Carlota y sus amigos"
+    },
+    {
+      "id": 18382,
+      "isbn": "9786289732757",
+      "titulo": "Pequeño emperador"
+    },
+    {
+      "id": 18384,
+      "isbn": "9788418933387",
+      "titulo": "Persuasión Alma pocket"
+    },
+    {
+      "id": 18386,
+      "isbn": "9788418008146",
+      "titulo": "Peter Pan Alma Clásicos"
+    },
+    {
+      "id": 18421,
+      "isbn": "9788418395635",
+      "titulo": "Robinson Crusoe Alma Clásicos"
+    },
+    {
+      "id": 18423,
+      "isbn": "9788419599230",
+      "titulo": "Romancero gitano"
+    },
+    {
+      "id": 18460,
+      "isbn": "9788491012283",
+      "titulo": "Simplemente Yo Combel"
+    },
+    {
+      "id": 18471,
+      "isbn": "9788417074135",
+      "titulo": "Sirenas"
+    },
+    {
+      "id": 18517,
+      "isbn": "9788496646438",
+      "titulo": "Todos sus patitos"
+    },
+    {
+      "id": 18529,
+      "isbn": "9786289661903",
+      "titulo": "Tres conejos"
+    },
+    {
+      "id": 18531,
+      "isbn": "9788496646469",
+      "titulo": "Tu Puedes"
+    },
+    {
+      "id": 18549,
+      "isbn": "9788496646179",
+      "titulo": "Verdaderos Amigos"
+    },
+    {
+      "id": 18553,
+      "isbn": "9788418395543",
+      "titulo": "Vindicacion de los derechos de la mujer"
+    }
+  ]
+}

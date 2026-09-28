@@ -1981,3 +1981,160 @@ function refugios_no_optimize_style($tag, $handle)
     return $tag;
 }
 add_filter('style_loader_tag', 'refugios_no_optimize_style', 20, 2);
+
+/* =========================================================
+ 20. DEVOLUCIONES: DESCUENTO Y PÁGINA /devoluciones/
+ Libros que vuelven a la editorial (nota A− en Nodux) con un
+ descuento antes de devolverlos. La lista vive en
+ devoluciones-config.json y no en WooCommerce porque la
+ sincronización de Nodux reescribe precio regular y
+ categorías en cada pasada: una categoría o un precio de
+ oferta puestos a mano se perderían o quedarían viejos. Aquí
+ el descuento se calcula sobre el precio regular vigente.
+ ========================================================= */
+
+/** Configuración de la campaña; vacía si ya venció o no hay lista. */
+function refugios_devol_config()
+{
+    static $cfg = null;
+    if ($cfg !== null) {
+        return $cfg;
+    }
+    $cfg = ['descuento' => 0, 'ids' => []];
+    $file = get_template_directory() . '/devoluciones-config.json';
+    if (!is_readable($file)) {
+        return $cfg;
+    }
+    $raw = json_decode((string) file_get_contents($file), true);
+    if (!is_array($raw) || empty($raw['productos'])) {
+        return $cfg;
+    }
+    if (!empty($raw['hasta'])) {
+        $today = wp_date('Y-m-d');
+        if ($today > $raw['hasta']) {
+            return $cfg;
+        }
+    }
+    $pct = (float) ($raw['descuento'] ?? 0);
+    if ($pct <= 0 || $pct >= 100) {
+        return $cfg;
+    }
+    $ids = array_map('intval', array_column($raw['productos'], 'id'));
+    $cfg = [
+        'descuento' => $pct,
+        'ids'       => array_fill_keys(array_filter($ids), true),
+        'hasta'     => $raw['hasta'] ?? null,
+    ];
+    return $cfg;
+}
+
+/** Precio con descuento de devolución, o null si el producto no está en la lista. */
+function refugios_devol_price($product)
+{
+    if (!$product instanceof WC_Product || !$product->is_type('simple')) {
+        return null;
+    }
+    $cfg = refugios_devol_config();
+    if (empty($cfg['ids'][$product->get_id()])) {
+        return null;
+    }
+    $regular = (float) $product->get_regular_price('edit');
+    if ($regular <= 0) {
+        return null;
+    }
+    return round($regular * (1 - $cfg['descuento'] / 100));
+}
+
+function refugios_devol_filter_price($price, $product)
+{
+    $devol = refugios_devol_price($product);
+    if ($devol === null) {
+        return $price;
+    }
+    // Si ya tiene una oferta mayor, se respeta la más baja.
+    if ($price !== '' && $price !== null && (float) $price > 0 && (float) $price < $devol) {
+        return $price;
+    }
+    return (string) $devol;
+}
+add_filter('woocommerce_product_get_price', 'refugios_devol_filter_price', 20, 2);
+add_filter('woocommerce_product_get_sale_price', 'refugios_devol_filter_price', 20, 2);
+
+/** Ruta /devoluciones/ sin depender de una página creada en el administrador. */
+function refugios_devol_rewrite()
+{
+    add_rewrite_rule('^devoluciones/?$', 'index.php?refugios_devol=1', 'top');
+}
+add_action('init', 'refugios_devol_rewrite');
+
+/**
+ * Guarda la regla una sola vez. Va en wp_loaded y no en init para que
+ * las reglas de WooCommerce y demás plugins ya estén registradas y no
+ * se pierdan en el flush.
+ */
+function refugios_devol_flush_once()
+{
+    $ver = 'devol-1';
+    if (get_option('refugios_devol_rewrite') !== $ver) {
+        flush_rewrite_rules(false);
+        update_option('refugios_devol_rewrite', $ver, false);
+    }
+}
+add_action('wp_loaded', 'refugios_devol_flush_once');
+
+function refugios_devol_query_var($vars)
+{
+    $vars[] = 'refugios_devol';
+    return $vars;
+}
+add_filter('query_vars', 'refugios_devol_query_var');
+
+function refugios_devol_template($template)
+{
+    if (get_query_var('refugios_devol')) {
+        $tpl = locate_template('page-devoluciones.php');
+        if ($tpl) {
+            status_header(200);
+            return $tpl;
+        }
+    }
+    return $template;
+}
+add_filter('template_include', 'refugios_devol_template', 50);
+
+function refugios_devol_title($title)
+{
+    if (!get_query_var('refugios_devol')) {
+        return $title;
+    }
+    $pct = (int) refugios_devol_config()['descuento'];
+    return sprintf(__('Devoluciones: libros al -%d%% | Refugios', 'refugios'), $pct ?: 15);
+}
+add_filter('pre_get_document_title', 'refugios_devol_title', 99);
+add_filter('rank_math/frontend/title', 'refugios_devol_title', 99);
+
+function refugios_devol_canonical($url)
+{
+    return get_query_var('refugios_devol') ? home_url('/devoluciones/') : $url;
+}
+add_filter('rank_math/frontend/canonical', 'refugios_devol_canonical', 99);
+
+function refugios_devol_description($desc)
+{
+    if (!get_query_var('refugios_devol')) {
+        return $desc;
+    }
+    return __('Últimos ejemplares antes de volver a la editorial, con descuento en la tienda de Itagüí y en la web.', 'refugios');
+}
+add_filter('rank_math/frontend/description', 'refugios_devol_description', 99);
+
+function refugios_devol_body_class($classes)
+{
+    if (get_query_var('refugios_devol')) {
+        $classes = array_diff($classes, ['home', 'blog']);
+        $classes[] = 'page';
+        $classes[] = 'devol-page-body';
+    }
+    return $classes;
+}
+add_filter('body_class', 'refugios_devol_body_class', 20);
