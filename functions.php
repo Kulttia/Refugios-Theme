@@ -2060,6 +2060,16 @@ function refugios_devol_filter_price($price, $product)
 add_filter('woocommerce_product_get_price', 'refugios_devol_filter_price', 20, 2);
 add_filter('woocommerce_product_get_sale_price', 'refugios_devol_filter_price', 20, 2);
 
+/**
+ * Woo descarta la oferta si el producto guarda fechas de una oferta
+ * vieja ya vencida; para estos libros manda la lista de devoluciones.
+ */
+function refugios_devol_is_on_sale($on_sale, $product)
+{
+    return refugios_devol_price($product) !== null ? true : $on_sale;
+}
+add_filter('woocommerce_product_is_on_sale', 'refugios_devol_is_on_sale', 999, 2);
+
 /** Ruta /devoluciones/ sin depender de una página creada en el administrador. */
 function refugios_devol_rewrite()
 {
