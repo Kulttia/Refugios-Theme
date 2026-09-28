@@ -2028,82 +2028,65 @@ function refugios_devol_config()
     return $cfg;
 }
 
-/** Precio con descuento de devolución, o null si el producto no está en la lista. */
-function refugios_devol_price($product)
+/**
+ * Escribe el precio de oferta real en cada libro de la lista y lo quita
+ * de los que salen. Tiene que ser un sale_price guardado (no un filtro)
+ * porque Advanced Dynamic Pricing recalcula el carrito desde el precio
+ * guardado del producto e ignora los filtros del tema. Nodux no toca
+ * sale_price, pero sí el regular: por eso se repasa cada 30 minutos y
+ * cada vez que cambia devoluciones-config.json.
+ */
+function refugios_devol_sync()
 {
-    if (!$product instanceof WC_Product || !$product->is_type('simple')) {
-        return null;
+    if (!function_exists('wc_get_product') || wp_doing_ajax()) {
+        return;
     }
+    $file = get_template_directory() . '/devoluciones-config.json';
+    $stamp = md5((string) @filemtime($file) . '|' . wp_date('Y-m-d'));
+    if (get_transient('refugios_devol_sync') === $stamp) {
+        return;
+    }
+    // El candado evita que dos visitas simultáneas hagan el mismo trabajo.
+    set_transient('refugios_devol_sync', $stamp, 30 * MINUTE_IN_SECONDS);
+
     $cfg = refugios_devol_config();
-    if (empty($cfg['ids'][$product->get_id()])) {
-        return null;
-    }
-    $regular = (float) $product->get_regular_price('edit');
-    if ($regular <= 0) {
-        return null;
-    }
-    return round($regular * (1 - $cfg['descuento'] / 100));
-}
+    $applied = (array) get_option('refugios_devol_applied', []);
+    $now = [];
 
-function refugios_devol_filter_price($price, $product)
-{
-    $devol = refugios_devol_price($product);
-    if ($devol === null) {
-        return $price;
+    foreach (array_keys($cfg['ids']) as $id) {
+        $product = wc_get_product($id);
+        if (!$product || !$product->is_type('simple')) {
+            continue;
+        }
+        $regular = (float) $product->get_regular_price('edit');
+        if ($regular <= 0) {
+            continue;
+        }
+        $sale = (string) round($regular * (1 - $cfg['descuento'] / 100));
+        $now[] = $id;
+        if ((string) $product->get_sale_price('edit') === $sale
+            && !$product->get_date_on_sale_from('edit')
+            && !$product->get_date_on_sale_to('edit')) {
+            continue;
+        }
+        $product->set_sale_price($sale);
+        $product->set_date_on_sale_from(null);
+        $product->set_date_on_sale_to(null);
+        $product->save();
     }
-    // Si ya tiene una oferta mayor, se respeta la más baja.
-    if ($price !== '' && $price !== null && (float) $price > 0 && (float) $price < $devol) {
-        return $price;
-    }
-    return (string) $devol;
-}
-add_filter('woocommerce_product_get_price', 'refugios_devol_filter_price', 20, 2);
-add_filter('woocommerce_product_get_sale_price', 'refugios_devol_filter_price', 20, 2);
 
-/**
- * Woo descarta la oferta si el producto guarda fechas de una oferta
- * vieja ya vencida; para estos libros manda la lista de devoluciones.
- */
-function refugios_devol_is_on_sale($on_sale, $product)
-{
-    return refugios_devol_price($product) !== null ? true : $on_sale;
-}
-add_filter('woocommerce_product_is_on_sale', 'refugios_devol_is_on_sale', PHP_INT_MAX, 2);
-
-/**
- * Precio tachado + precio de devolución. Va aparte de is_on_sale porque
- * un plugin de la tienda lo vuelve a poner en false después del tema.
- */
-function refugios_devol_price_html($html, $product)
-{
-    $devol = refugios_devol_price($product);
-    if ($devol === null) {
-        return $html;
+    // Los que ya no están en la lista (o la campaña venció) vuelven al precio normal.
+    foreach (array_diff(array_map('intval', $applied), $now) as $id) {
+        $product = wc_get_product($id);
+        if ($product && $product->get_sale_price('edit') !== '') {
+            $product->set_sale_price('');
+            $product->save();
+        }
     }
-    $regular = wc_get_price_to_display($product, ['price' => $product->get_regular_price()]);
-    $sale = wc_get_price_to_display($product, ['price' => $devol]);
-    return wc_format_sale_price($regular, $sale) . $product->get_price_suffix();
-}
-add_filter('woocommerce_get_price_html', 'refugios_devol_price_html', PHP_INT_MAX, 2);
 
-/** Insignia "-15%" de la lista de devoluciones, o '' si no aplica. */
-function refugios_devol_flash($product)
-{
-    if (refugios_devol_price($product) === null) {
-        return '';
-    }
-    return '<span class="onsale">-' . (int) refugios_devol_config()['descuento'] . '%</span>';
+    update_option('refugios_devol_applied', $now, false);
 }
-
-/** En la ficha del libro, la insignia sale aunque is_on_sale diga que no. */
-function refugios_devol_single_flash()
-{
-    global $product;
-    if ($product && !$product->is_on_sale()) {
-        echo wp_kses_post(refugios_devol_flash($product));
-    }
-}
-add_action('woocommerce_before_single_product_summary', 'refugios_devol_single_flash', 10);
+add_action('wp_loaded', 'refugios_devol_sync', 20);
 
 /** Ruta /devoluciones/ sin depender de una página creada en el administrador. */
 function refugios_devol_rewrite()
