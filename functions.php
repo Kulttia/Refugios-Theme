@@ -1960,8 +1960,8 @@ function refugios_critical_css()
 .refugios-card-wa:hover{background:#25d366;color:#fff;border-color:#4e342e}
 .refugios-product-card__actions{flex-wrap:wrap}
 .refugios-product-card__actions .added_to_cart{position:static!important;inset:auto!important;flex:1 0 100%;order:3;display:flex!important;align-items:center;justify-content:center;gap:.55rem;min-height:2.9rem;padding:.75rem 1rem;box-sizing:border-box;background:#4e342e;color:#f5e9e2!important;border:2px solid #4e342e;box-shadow:3px 3px 0 #d9a066;font-family:Montserrat,Arial,sans-serif!important;font-size:.78rem!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.1em;text-decoration:none;text-align:center;z-index:10;animation:refugios-cart-in .25s ease-out}
-.refugios-product-card__actions .added_to_cart::before{content:"07a"!important;display:inline-block!important;font-family:"Font Awesome 6 Free"!important;font-weight:900!important;font-size:.95rem!important;margin:0!important}
-.refugios-product-card__actions .added_to_cart::after{content:"92"!important;display:inline-block!important;font-size:1rem!important;margin:0!important;transition:transform .15s ease}
+.refugios-product-card__actions .added_to_cart::before{content:"\f07a"!important;display:inline-block!important;font-family:"Font Awesome 6 Free"!important;font-weight:900!important;font-size:.95rem!important;margin:0!important}
+.refugios-product-card__actions .added_to_cart::after{content:"\2192"!important;display:inline-block!important;font-size:1rem!important;margin:0!important;transition:transform .15s ease}
 .refugios-product-card__actions .added_to_cart:hover,.refugios-product-card__actions .added_to_cart:focus-visible{background:#d9a066;color:#4e342e!important;box-shadow:3px 3px 0 #4e342e}
 .refugios-product-card__actions .added_to_cart:hover::after{transform:translateX(3px)}
 @keyframes refugios-cart-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
