@@ -1958,7 +1958,15 @@ function refugios_critical_css()
 .refugios-card-buy:hover{background:#4e342e;color:#f5e9e2;box-shadow:3px 3px 0 #4e342e}
 .refugios-card-wa{display:inline-flex;align-items:center;justify-content:center;width:2.9rem;min-width:2.9rem;background:#f5e9e2;color:#4e342e;border:2px solid #4e342e;font-size:1.15rem;text-decoration:none;position:relative;z-index:10;box-sizing:border-box}
 .refugios-card-wa:hover{background:#25d366;color:#fff;border-color:#4e342e}
-.refugios-product-card__actions .added_to_cart{position:absolute;inset:auto 0 -1.6rem 0;font-family:Montserrat,Arial,sans-serif;font-size:.68rem;font-weight:700;text-transform:uppercase;color:#4e342e;text-align:center;z-index:10}
+.refugios-product-card__actions{flex-wrap:wrap}
+.refugios-product-card__actions .added_to_cart{position:static!important;inset:auto!important;flex:1 0 100%;display:flex!important;align-items:center;justify-content:center;gap:.55rem;min-height:2.9rem;padding:.75rem 1rem;box-sizing:border-box;background:#4e342e;color:#f5e9e2!important;border:2px solid #4e342e;box-shadow:3px 3px 0 #d9a066;font-family:Montserrat,Arial,sans-serif!important;font-size:.78rem!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.1em;text-decoration:none;text-align:center;z-index:10;animation:refugios-cart-in .25s ease-out}
+.refugios-product-card__actions .added_to_cart::before{content:"07a";font-family:"Font Awesome 6 Free";font-weight:900;font-size:.95rem}
+.refugios-product-card__actions .added_to_cart::after{content:"92";font-size:1rem;transition:transform .15s ease}
+.refugios-product-card__actions .added_to_cart:hover,.refugios-product-card__actions .added_to_cart:focus-visible{background:#d9a066;color:#4e342e!important;box-shadow:3px 3px 0 #4e342e}
+.refugios-product-card__actions .added_to_cart:hover::after{transform:translateX(3px)}
+@keyframes refugios-cart-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(max-width:767px){.refugios-product-card__actions .added_to_cart{min-height:2.75rem;font-size:.72rem!important;letter-spacing:.08em;padding:.7rem .5rem}}
+@media(prefers-reduced-motion:reduce){.refugios-product-card__actions .added_to_cart{animation:none}}
 .refugios-product-card__media .onsale{position:absolute;top:.7rem;left:.7rem;right:auto;z-index:5;margin:0;display:inline-block;background:#d9a066;color:#4e342e;border:2px solid #4e342e;box-shadow:2px 2px 0 #4e342e;border-radius:0;font-family:Montserrat,Arial,sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.08em;line-height:1;min-width:0;min-height:0;height:auto;padding:.35rem .5rem;text-align:center}
 .refugios-product-card__price ins{text-decoration:none;border-bottom:none}
 .refugios-product-card__price del{font-size:.9rem;color:rgba(78,52,46,.55);text-decoration:line-through;margin-right:.45rem}
