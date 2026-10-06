@@ -2128,6 +2128,14 @@ add_filter('query_vars', 'refugios_devol_query_var');
 function refugios_devol_template($template)
 {
     if (get_query_var('refugios_devol')) {
+        // Sin campaña activa la página no existe: 404 y fuera de buscadores.
+        if (empty(refugios_devol_config()['ids'])) {
+            global $wp_query;
+            $wp_query->set_404();
+            status_header(404);
+            nocache_headers();
+            return get_404_template() ?: $template;
+        }
         $tpl = locate_template('page-devoluciones.php');
         if ($tpl) {
             status_header(200);
@@ -2140,7 +2148,7 @@ add_filter('template_include', 'refugios_devol_template', 50);
 
 function refugios_devol_title($title)
 {
-    if (!get_query_var('refugios_devol')) {
+    if (!get_query_var('refugios_devol') || empty(refugios_devol_config()['ids'])) {
         return $title;
     }
     $pct = (int) refugios_devol_config()['descuento'];
@@ -2151,13 +2159,13 @@ add_filter('rank_math/frontend/title', 'refugios_devol_title', 99);
 
 function refugios_devol_canonical($url)
 {
-    return get_query_var('refugios_devol') ? home_url('/devoluciones/') : $url;
+    return get_query_var('refugios_devol') && !empty(refugios_devol_config()['ids']) ? home_url('/devoluciones/') : $url;
 }
 add_filter('rank_math/frontend/canonical', 'refugios_devol_canonical', 99);
 
 function refugios_devol_description($desc)
 {
-    if (!get_query_var('refugios_devol')) {
+    if (!get_query_var('refugios_devol') || empty(refugios_devol_config()['ids'])) {
         return $desc;
     }
     return __('Últimos ejemplares antes de volver a la editorial, con descuento en la tienda de Itagüí y en la web.', 'refugios');
@@ -2166,7 +2174,7 @@ add_filter('rank_math/frontend/description', 'refugios_devol_description', 99);
 
 function refugios_devol_body_class($classes)
 {
-    if (get_query_var('refugios_devol')) {
+    if (get_query_var('refugios_devol') && !empty(refugios_devol_config()['ids'])) {
         $classes = array_diff($classes, ['home', 'blog']);
         $classes[] = 'page';
         $classes[] = 'devol-page-body';
