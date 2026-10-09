@@ -1959,6 +1959,11 @@ function refugios_critical_css()
 .refugios-card-wa{display:inline-flex;align-items:center;justify-content:center;width:2.9rem;min-width:2.9rem;background:#f5e9e2;color:#4e342e;border:2px solid #4e342e;font-size:1.15rem;text-decoration:none;position:relative;z-index:10;box-sizing:border-box}
 .refugios-card-wa:hover{background:#25d366;color:#fff;border-color:#4e342e}
 .refugios-product-card__actions{flex-wrap:wrap}
+.refugios-product-card__footer,.refugios-product-card__actions{width:100%}
+.refugios-product-card__actions .refugios-card-buy{min-width:0!important;white-space:nowrap}
+.refugios-product-card__actions .refugios-card-wa{flex:0 0 2.9rem!important;min-height:2.9rem}
+.refugios-product-card__content{container-type:inline-size}
+@container (max-width:230px){.refugios-product-card__actions .refugios-card-buy{padding:.7rem .35rem!important;letter-spacing:.05em!important;gap:.35rem!important}.refugios-product-card__actions .refugios-card-buy i{display:none}}
 .refugios-product-card__actions .added_to_cart{position:static!important;inset:auto!important;flex:1 0 100%;order:3;display:flex!important;align-items:center;justify-content:center;gap:.55rem;min-height:2.9rem;padding:.75rem 1rem;box-sizing:border-box;background:#4e342e;color:#f5e9e2!important;border:2px solid #4e342e;box-shadow:3px 3px 0 #d9a066;font-family:Montserrat,Arial,sans-serif!important;font-size:.78rem!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.1em;text-decoration:none;text-align:center;z-index:10;animation:refugios-cart-in .25s ease-out}
 .refugios-product-card__actions .added_to_cart::before{content:"\f07a"!important;display:inline-block!important;font-family:"Font Awesome 6 Free"!important;font-weight:900!important;font-size:.95rem!important;margin:0!important}
 .refugios-product-card__actions .added_to_cart::after{content:"\2192"!important;display:inline-block!important;font-size:1rem!important;margin:0!important;transition:transform .15s ease}
@@ -2539,6 +2544,73 @@ function refugios_bm_global_css()
     <?php
 }
 add_action('wp_head', 'refugios_bm_global_css', 30);
+
+/**
+ * Franja de anuncio sobre el menú: se va con el scroll (el menú sí es
+ * fijo), se puede cerrar y no aparece donde ya hay aviso propio
+ * (la página de la campaña, carrito y pago). La fecha se revisa también
+ * en el navegador porque las páginas en caché pueden sobrevivir al cierre.
+ */
+function refugios_bm_announce()
+{
+    if (!refugios_bm_activa() || refugios_bm_is_page()
+        || (function_exists('is_cart') && (is_cart() || is_checkout()))) {
+        return;
+    }
+    $cfg = refugios_bm_config();
+    $hasta = $cfg['hasta'] ? refugios_bm_fecha($cfg['hasta']) : '';
+    ?>
+<style data-no-optimize="1" data-optimized="0" id="refugios-bm-announce-css">
+.bm-announce{position:relative;background:#4e342e;color:#f5e9e2;border-bottom:2px solid #d9a066}
+.bm-announce__link{display:flex;align-items:center;justify-content:center;gap:.75rem;min-height:2.6rem;padding:.45rem 3rem;color:#f5e9e2!important;text-decoration:none!important;font-family:Montserrat,Arial,sans-serif;font-size:.8rem;line-height:1.35;text-align:center}
+.bm-announce__tag{flex:0 0 auto;padding:.22rem .45rem;background:#d9a066;color:#4e342e;border:2px solid #f5e9e2;font-weight:800;font-size:.72rem;letter-spacing:.06em;line-height:1;transform:rotate(-3deg)}
+.bm-announce__text b{font-weight:800}.bm-announce__short{display:none}
+.bm-announce__when{opacity:.8}
+.bm-announce__cta{flex:0 0 auto;font-weight:800;text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;color:#d9a066;border-bottom:2px solid #d9a066;padding-bottom:1px}
+.bm-announce__link:hover .bm-announce__cta,.bm-announce__link:focus-visible .bm-announce__cta{color:#f5e9e2;border-color:#f5e9e2}
+.bm-announce__close{position:absolute;top:50%;right:.5rem;transform:translateY(-50%);width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;background:transparent;border:0;color:#f5e9e2;font-size:1.2rem;line-height:1;cursor:pointer;opacity:.75}
+.bm-announce__close:hover,.bm-announce__close:focus-visible{opacity:1;outline:2px solid #d9a066}
+.bm-announce[hidden]{display:none}
+@media(max-width:767px){.bm-announce__link{justify-content:flex-start;gap:.6rem;padding:.5rem 2.75rem .5rem 1rem;font-size:.78rem;text-align:left}.bm-announce__long,.bm-announce__when{display:none}.bm-announce__short{display:inline}.bm-announce__cta{font-size:.66rem;letter-spacing:.06em}}
+</style>
+<div class="bm-announce" id="bm-announce" data-hasta="<?php echo esc_attr($cfg['hasta']); ?>">
+    <a class="bm-announce__link" href="<?php echo esc_url(home_url('/booketmania/')); ?>">
+        <span class="bm-announce__tag">3x2</span>
+        <span class="bm-announce__text">
+            <span class="bm-announce__long"><b><?php echo esc_html($cfg['nombre']); ?>:</b> <?php esc_html_e('lleva 3 libros de Booket, Maxi Tusquets o Austral y el de menor valor te sale gratis.', 'refugios'); ?></span>
+            <span class="bm-announce__short"><b><?php esc_html_e('3x2', 'refugios'); ?></b> <?php esc_html_e('en Booket, Maxi Tusquets y Austral', 'refugios'); ?></span>
+            <?php if ($hasta): ?><span class="bm-announce__when" data-bm-when><?php echo esc_html(sprintf(__('Hasta el %s.', 'refugios'), $hasta)); ?></span><?php endif; ?>
+        </span>
+        <span class="bm-announce__cta"><?php esc_html_e('Ver libros', 'refugios'); ?> →</span>
+    </a>
+    <button type="button" class="bm-announce__close" aria-label="<?php esc_attr_e('Cerrar anuncio', 'refugios'); ?>">×</button>
+</div>
+<script>
+(function () {
+    var bar = document.getElementById('bm-announce');
+    var key = 'refugios_bm_closed_<?php echo esc_js($cfg['stamp']); ?>';
+    var hasta = bar.getAttribute('data-hasta');
+    var hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+    var closed = false;
+    try { closed = sessionStorage.getItem(key) === '1'; } catch (e) {}
+    if (closed || (hasta && hoy > hasta)) { bar.hidden = true; return; }
+    if (hasta) {
+        var dias = Math.round((Date.parse(hasta) - Date.parse(hoy)) / 864e5);
+        var when = bar.querySelector('[data-bm-when]');
+        if (when && dias >= 0 && dias <= 5) {
+            when.textContent = dias === 0 ? '¡Último día!' : (dias === 1 ? '¡Queda 1 día!' : '¡Quedan ' + dias + ' días!');
+            when.style.display = 'inline';
+        }
+    }
+    bar.querySelector('.bm-announce__close').addEventListener('click', function () {
+        bar.hidden = true;
+        try { sessionStorage.setItem(key, '1'); } catch (e) {}
+    });
+})();
+</script>
+    <?php
+}
+add_action('wp_body_open', 'refugios_bm_announce', 5);
 
 /** Ruta /booketmania/ sin página en el administrador. */
 function refugios_bm_rewrite()
