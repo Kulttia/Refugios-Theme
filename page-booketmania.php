@@ -37,7 +37,7 @@ if ($bm_query && $bm_query->have_posts()) {
     }
 }
 $bm_count = count($bm_map);
-$bm_hasta = !empty($bm_cfg['hasta']) ? wp_date('j \d\e F', strtotime($bm_cfg['hasta'])) : '';
+$bm_hasta = !empty($bm_cfg['hasta']) ? refugios_bm_fecha($bm_cfg['hasta']) : '';
 ?>
 
 <?php // Estilos en línea: style.css se sirve sin versión y el CDN/navegador lo guarda viejo. ?>
@@ -91,8 +91,8 @@ $bm_hasta = !empty($bm_cfg['hasta']) ? wp_date('j \d\e F', strtotime($bm_cfg['ha
         <div class="container">
             <ol class="bm-steps">
                 <li><b>1</b><span><?php esc_html_e('Elige tres libros de cualquiera de los tres sellos.', 'refugios'); ?></span></li>
-                <li><b>2</b><span><?php esc_html_e('El de menor valor de cada tres te sale gratis.', 'refugios'); ?></span></li>
-                <li><b>3</b><span><?php esc_html_e('¿Seis libros? Dos gratis. El carrito hace la cuenta y te muestra cuánto ahorras.', 'refugios'); ?></span></li>
+                <li><b>2</b><span><?php esc_html_e('Por cada tres, el de menor valor te sale gratis.', 'refugios'); ?></span></li>
+                <li><b>3</b><span><?php esc_html_e('¿Seis libros? Los dos de menor valor, gratis. El carrito hace la cuenta y te muestra cuánto ahorras.', 'refugios'); ?></span></li>
             </ol>
             <ul class="bm-facts" role="list">
                 <li><i class="fa-solid fa-book" aria-hidden="true"></i>
@@ -176,11 +176,11 @@ $bm_hasta = !empty($bm_cfg['hasta']) ? wp_date('j \d\e F', strtotime($bm_cfg['ha
     function money(n) {
         return '$ ' + Math.round(n).toLocaleString('es-CO');
     }
-    // Lo mismo que el carrito: de mayor a menor, cada tercero sale gratis.
+    // Lo mismo que el carrito: por cada tres, los de menor valor salen gratis.
     function savings(prices, lleva) {
-        var s = prices.slice().sort(function (a, b) { return b - a; });
+        var s = prices.slice().sort(function (a, b) { return a - b; });
         var total = 0;
-        for (var i = lleva - 1; i < s.length; i += lleva) total += s[i];
+        for (var i = 0; i < Math.floor(s.length / lleva); i++) total += s[i];
         return total;
     }
 

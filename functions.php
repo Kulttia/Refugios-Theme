@@ -2320,10 +2320,18 @@ function refugios_bm_product_ids()
     return $ids;
 }
 
+/** "2026-10-31" → "31 de octubre", en la zona del sitio (en UTC daría el 30). */
+function refugios_bm_fecha($ymd)
+{
+    $d = date_create((string) $ymd, wp_timezone());
+    return $d ? wp_date('j \d\e F', $d->getTimestamp()) : '';
+}
+
 /**
  * Reparto del carrito: cada ejemplar elegible cuenta (dos copias del
- * mismo libro son dos), se ordenan de mayor a menor precio y en cada
- * grupo de tres el último —el de menor valor— sale gratis.
+ * mismo libro son dos) y por cada tres sale gratis uno: los de menor
+ * valor de todo el pedido. Así sumar un cuarto libro nunca cambia
+ * cuál sale gratis.
  */
 function refugios_bm_cart_calc($cart = null)
 {
@@ -2347,12 +2355,12 @@ function refugios_bm_cart_calc($cart = null)
         }
     }
     usort($units, function ($a, $b) {
-        return $b[1] <=> $a[1] ?: strcmp($a[0], $b[0]);
+        return $a[1] <=> $b[1] ?: strcmp($a[0], $b[0]);
     });
-    $lleva = refugios_bm_config()['lleva'];
+    $libres = intdiv(count($units), refugios_bm_config()['lleva']);
     foreach ($units as $i => $u) {
         $out['precios'][] = $u[1];
-        if (($i + 1) % $lleva === 0) {
+        if ($i < $libres) {
             $out['gratis'][$u[0]] = ($out['gratis'][$u[0]] ?? 0) + 1;
             $out['ahorro'] += $u[1];
         }
@@ -2504,7 +2512,7 @@ function refugios_bm_single_notice()
         <span class="bm-notice__tag">3x2</span>
         <p><?php echo wp_kses_post(sprintf(
             __('<strong>Booketmanía:</strong> lleva 3 libros de Booket, Maxi Tusquets o Austral y el de menor valor te sale gratis. Hasta el %s.', 'refugios'),
-            esc_html(wp_date('j \d\e F', strtotime(refugios_bm_config()['hasta'])))
+            esc_html(refugios_bm_fecha(refugios_bm_config()['hasta']))
         )); ?>
             <a href="<?php echo esc_url(home_url('/booketmania/')); ?>"><?php esc_html_e('Arma tu combo', 'refugios'); ?> →</a>
         </p>
