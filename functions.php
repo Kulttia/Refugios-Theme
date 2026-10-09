@@ -2182,3 +2182,445 @@ function refugios_devol_body_class($classes)
     return $classes;
 }
 add_filter('body_class', 'refugios_devol_body_class', 20);
+
+/* =========================================================
+ 22. BOOKETMANÍA 3x2 — DESCUENTO Y PÁGINA /booketmania/
+ Campaña de Planeta: por cada tres libros de Booket, Maxi
+ Tusquets o Austral, el de menor valor sale gratis. Los
+ libros se reconocen por el atributo "Sello" que sincroniza
+ Nodux (no por una lista), así un libro que llega durante la
+ campaña entra solo. El descuento es una línea negativa del
+ carrito y no un precio de oferta: depende de qué más lleve
+ el cliente, no del libro. Fechas y sellos en
+ booketmania-config.json.
+ ========================================================= */
+
+/** Configuración de la campaña; 'activa' => false fuera de fechas. */
+function refugios_bm_config()
+{
+    static $cfg = null;
+    if ($cfg !== null) {
+        return $cfg;
+    }
+    $cfg = ['activa' => false];
+    $file = get_template_directory() . '/booketmania-config.json';
+    if (!is_readable($file)) {
+        return $cfg;
+    }
+    $raw = json_decode((string) file_get_contents($file), true);
+    if (!is_array($raw) || empty($raw['sellos'])) {
+        return $cfg;
+    }
+    $today = wp_date('Y-m-d');
+    if ((!empty($raw['desde']) && $today < $raw['desde'])
+        || (!empty($raw['hasta']) && $today > $raw['hasta'])) {
+        return $cfg;
+    }
+    $sellos = [];
+    foreach ($raw['sellos'] as $s) {
+        $claves = array_filter(array_map('refugios_bm_norm', (array) ($s['claves'] ?? [])));
+        if (!empty($s['nombre']) && $claves) {
+            $sellos[] = ['nombre' => (string) $s['nombre'], 'claves' => $claves];
+        }
+    }
+    if (!$sellos) {
+        return $cfg;
+    }
+    $cfg = [
+        'activa' => true,
+        'nombre' => (string) ($raw['nombre'] ?? 'Booketmanía'),
+        'lleva'  => max(2, (int) ($raw['lleva'] ?? 3)),
+        'hasta'  => $raw['hasta'] ?? null,
+        'sellos' => $sellos,
+        'stamp'  => md5((string) @filemtime($file)),
+    ];
+    return $cfg;
+}
+
+function refugios_bm_activa()
+{
+    return function_exists('WC') && refugios_bm_config()['activa'];
+}
+
+/** "Maxi Tusquets Colombia" → "maxitusquetscolombia". */
+function refugios_bm_norm($s)
+{
+    return strtolower(preg_replace('/[^a-z0-9]/i', '', remove_accents((string) $s)));
+}
+
+/** Nombre del sello de la campaña al que pertenece el libro, o ''. */
+function refugios_bm_sello($product)
+{
+    static $memo = [];
+    if (!$product instanceof WC_Product || !refugios_bm_activa()) {
+        return '';
+    }
+    $id = $product->get_parent_id() ?: $product->get_id();
+    if (isset($memo[$id])) {
+        return $memo[$id];
+    }
+    $source = $product->get_parent_id() ? wc_get_product($id) : $product;
+    $sello = refugios_bm_norm($source ? $source->get_attribute('Sello') : '');
+    $memo[$id] = '';
+    if ($sello !== '') {
+        foreach (refugios_bm_config()['sellos'] as $s) {
+            foreach ($s['claves'] as $clave) {
+                if (strpos($sello, $clave) === 0) {
+                    $memo[$id] = $s['nombre'];
+                    break 2;
+                }
+            }
+        }
+    }
+    return $memo[$id];
+}
+
+/**
+ * Libros publicados, visibles y con existencias de los sellos de la
+ * campaña. El sello es un atributo propio del producto (va serializado
+ * en _product_attributes): SQL descarta lo obvio y PHP decide.
+ */
+function refugios_bm_product_ids()
+{
+    if (!refugios_bm_activa()) {
+        return [];
+    }
+    $cfg = refugios_bm_config();
+    $key = 'refugios_bm_ids_' . $cfg['stamp'];
+    $cached = get_transient($key);
+    if (is_array($cached)) {
+        return $cached;
+    }
+
+    global $wpdb;
+    $likes = [];
+    $args = [];
+    foreach ($cfg['sellos'] as $s) {
+        foreach ($s['claves'] as $clave) {
+            // "maxitusquets" → "%m%a%x%i%t%u%s%q%u%e%t%s%": tolera espacios.
+            $likes[] = 'a.meta_value LIKE %s';
+            $args[] = '%' . implode('%', str_split($clave)) . '%';
+        }
+    }
+    $sql = "SELECT p.ID FROM {$wpdb->posts} p
+        JOIN {$wpdb->postmeta} a ON a.post_id = p.ID AND a.meta_key = '_product_attributes'
+        JOIN {$wpdb->postmeta} s ON s.post_id = p.ID AND s.meta_key = '_stock_status' AND s.meta_value = 'instock'
+        WHERE p.post_type = 'product' AND p.post_status = 'publish'
+        AND (" . implode(' OR ', $likes) . ')';
+    $candidates = $wpdb->get_col($wpdb->prepare($sql, $args));
+
+    $ids = [];
+    foreach ($candidates as $id) {
+        $product = wc_get_product((int) $id);
+        if ($product && $product->is_visible() && $product->is_in_stock() && refugios_bm_sello($product)) {
+            $ids[] = (int) $id;
+        }
+    }
+    set_transient($key, $ids, 15 * MINUTE_IN_SECONDS);
+    return $ids;
+}
+
+/**
+ * Reparto del carrito: cada ejemplar elegible cuenta (dos copias del
+ * mismo libro son dos), se ordenan de mayor a menor precio y en cada
+ * grupo de tres el último —el de menor valor— sale gratis.
+ */
+function refugios_bm_cart_calc($cart = null)
+{
+    $out = ['unidades' => 0, 'ahorro' => 0.0, 'gratis' => [], 'precios' => []];
+    if (!refugios_bm_activa()) {
+        return $out;
+    }
+    $cart = $cart ?: (WC()->cart ?? null);
+    if (!$cart) {
+        return $out;
+    }
+    $units = [];
+    foreach ($cart->get_cart() as $key => $item) {
+        $product = $item['data'] ?? null;
+        if (!$product || !refugios_bm_sello($product)) {
+            continue;
+        }
+        $price = (float) $product->get_price();
+        for ($i = 0; $i < (int) $item['quantity']; $i++) {
+            $units[] = [$key, $price];
+        }
+    }
+    usort($units, function ($a, $b) {
+        return $b[1] <=> $a[1] ?: strcmp($a[0], $b[0]);
+    });
+    $lleva = refugios_bm_config()['lleva'];
+    foreach ($units as $i => $u) {
+        $out['precios'][] = $u[1];
+        if (($i + 1) % $lleva === 0) {
+            $out['gratis'][$u[0]] = ($out['gratis'][$u[0]] ?? 0) + 1;
+            $out['ahorro'] += $u[1];
+        }
+    }
+    $out['unidades'] = count($units);
+    return $out;
+}
+
+/** El descuento: una línea negativa sin impuestos (los libros están exentos). */
+function refugios_bm_fee($cart)
+{
+    if ((is_admin() && !wp_doing_ajax()) || !refugios_bm_activa()) {
+        return;
+    }
+    $calc = refugios_bm_cart_calc($cart);
+    if ($calc['ahorro'] > 0) {
+        $cart->add_fee(
+            sprintf(__('%s 3x2 · el de menor valor gratis', 'refugios'), refugios_bm_config()['nombre']),
+            -$calc['ahorro'],
+            false
+        );
+    }
+}
+add_action('woocommerce_cart_calculate_fees', 'refugios_bm_fee', 20);
+
+/** En el carrito y el pago: qué libro sale gratis y cuáles cuentan para el combo. */
+function refugios_bm_item_data($data, $item)
+{
+    if (!refugios_bm_activa() || empty($item['data']) || !refugios_bm_sello($item['data'])) {
+        return $data;
+    }
+    $calc = refugios_bm_cart_calc();
+    $free = $calc['gratis'][$item['key'] ?? ''] ?? 0;
+    if ($free > 0) {
+        $value = (int) $item['quantity'] > 1
+            ? sprintf(_n('%d ejemplar te sale gratis', '%d ejemplares te salen gratis', $free, 'refugios'), $free)
+            : __('¡Te sale gratis!', 'refugios');
+    } else {
+        $value = __('Cuenta para el 3x2', 'refugios');
+    }
+    $data[] = ['key' => refugios_bm_config()['nombre'], 'value' => $value];
+    return $data;
+}
+add_filter('woocommerce_get_item_data', 'refugios_bm_item_data', 20, 2);
+
+/** Mensaje de progreso del combo según lo que hay en el carrito. */
+function refugios_bm_message($calc)
+{
+    $lleva = refugios_bm_config()['lleva'];
+    $n = $calc['unidades'];
+    $resto = $n % $lleva;
+    $falta = $lleva - $resto;
+    $ahorro = '<strong>' . wp_strip_all_tags(wc_price($calc['ahorro'])) . '</strong>';
+
+    if ($n === 0) {
+        return sprintf(__('Elige %d libros y el de menor valor te sale gratis.', 'refugios'), $lleva);
+    }
+    if ($resto === 0) {
+        return sprintf(__('¡Combo listo! Te ahorras %s en tu pedido.', 'refugios'), $ahorro);
+    }
+    $add = sprintf(_n('Agrega %d libro más', 'Agrega %d libros más', $falta, 'refugios'), $falta);
+    if ($calc['ahorro'] > 0) {
+        return sprintf(__('Ya te ahorras %1$s. %2$s y otro te sale gratis.', 'refugios'), $ahorro, $add);
+    }
+    if ($falta === 1) {
+        $min = '<strong>' . wp_strip_all_tags(wc_price(min($calc['precios']))) . '</strong>';
+        return sprintf(__('¡Te falta uno! Con el tercero te ahorras hasta %s: el de menor valor sale gratis.', 'refugios'), $min);
+    }
+    return sprintf(__('%s y el de menor valor de los tres te sale gratis.', 'refugios'), $add);
+}
+
+/** Barra del combo: fija en /booketmania/ y refrescada por los fragmentos de Woo. */
+function refugios_bm_combo_bar()
+{
+    if (!refugios_bm_activa()) {
+        return '';
+    }
+    $calc = refugios_bm_cart_calc();
+    $lleva = refugios_bm_config()['lleva'];
+    $n = $calc['unidades'];
+    $filled = $n === 0 ? 0 : (($n % $lleva) ?: $lleva);
+    $state = ['lleva' => $lleva, 'precios' => array_values($calc['precios'])];
+
+    ob_start(); ?>
+    <div class="bm-combo<?php echo $n ? ' has-items' : ''; ?>" role="status" aria-live="polite"
+         data-bm="<?php echo esc_attr(wp_json_encode($state)); ?>">
+        <div class="container bm-combo__inner">
+            <span class="bm-combo__pips" aria-hidden="true">
+                <?php for ($i = 1; $i <= $lleva; $i++): ?>
+                    <span class="bm-pip<?php echo $i <= $filled ? ' is-on' : ''; ?><?php echo $i === $lleva ? ' is-free' : ''; ?>"><?php echo $i === $lleva ? 'GRATIS' : esc_html($i); ?></span>
+                <?php endfor; ?>
+            </span>
+            <p class="bm-combo__text"><?php echo wp_kses_post(refugios_bm_message($calc)); ?></p>
+            <?php if ($n): ?>
+                <a class="bm-combo__btn" href="<?php echo esc_url(wc_get_cart_url()); ?>">
+                    <?php echo esc_html(sprintf(__('Ver carrito (%d)', 'refugios'), $n)); ?>
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+function refugios_bm_fragments($fragments)
+{
+    if (refugios_bm_activa()) {
+        $fragments['div.bm-combo'] = refugios_bm_combo_bar();
+    }
+    return $fragments;
+}
+add_filter('woocommerce_add_to_cart_fragments', 'refugios_bm_fragments');
+
+/** Aviso en carrito y pago cuando hay libros de la campaña. */
+function refugios_bm_cart_notice()
+{
+    if (!refugios_bm_activa()) {
+        return;
+    }
+    $calc = refugios_bm_cart_calc();
+    if (!$calc['unidades']) {
+        return;
+    }
+    $done = $calc['unidades'] % refugios_bm_config()['lleva'] === 0;
+    ?>
+    <div class="bm-notice<?php echo $done ? ' is-done' : ''; ?>" role="status">
+        <span class="bm-notice__tag">3x2</span>
+        <p><?php echo wp_kses_post(refugios_bm_message($calc)); ?>
+            <?php if (!$done): ?>
+                <a href="<?php echo esc_url(home_url('/booketmania/')); ?>"><?php esc_html_e('Ver libros de Booketmanía', 'refugios'); ?> →</a>
+            <?php endif; ?>
+        </p>
+    </div>
+    <?php
+}
+add_action('woocommerce_before_cart', 'refugios_bm_cart_notice', 6);
+add_action('woocommerce_before_checkout_form', 'refugios_bm_cart_notice', 6);
+
+/** En la ficha de un libro elegible: la promoción y el enlace a la página. */
+function refugios_bm_single_notice()
+{
+    global $product;
+    if (!refugios_bm_activa() || !refugios_bm_sello($product)) {
+        return;
+    }
+    ?>
+    <div class="bm-notice bm-notice--single">
+        <span class="bm-notice__tag">3x2</span>
+        <p><?php echo wp_kses_post(sprintf(
+            __('<strong>Booketmanía:</strong> lleva 3 libros de Booket, Maxi Tusquets o Austral y el de menor valor te sale gratis. Hasta el %s.', 'refugios'),
+            esc_html(wp_date('j \d\e F', strtotime(refugios_bm_config()['hasta'])))
+        )); ?>
+            <a href="<?php echo esc_url(home_url('/booketmania/')); ?>"><?php esc_html_e('Arma tu combo', 'refugios'); ?> →</a>
+        </p>
+    </div>
+    <?php
+}
+add_action('woocommerce_single_product_summary', 'refugios_bm_single_notice', 11);
+
+/** Estilos compartidos (sello 3x2 en las cards, avisos). En línea por el CDN. */
+function refugios_bm_global_css()
+{
+    if (!refugios_bm_activa()) {
+        return;
+    }
+    ?>
+<style data-no-optimize="1" data-optimized="0" id="refugios-bm-css">
+.bm-flag{position:absolute;top:.6rem;right:.6rem;z-index:3;padding:.3rem .55rem;background:#d9a066;color:#4e342e;border:2px solid #4e342e;box-shadow:2px 2px 0 #4e342e;font-family:Montserrat,Arial,sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.06em;line-height:1;transform:rotate(3deg)}
+.bm-notice{display:flex;align-items:flex-start;gap:.9rem;margin:0 0 1.5rem;padding:1rem 1.25rem;background:#fff;border:2px solid #4e342e;box-shadow:4px 4px 0 #d9a066;color:#4e342e;font-size:.95rem;line-height:1.5}
+.bm-notice p{margin:0}.bm-notice a{color:#4e342e;font-weight:700;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.bm-notice.is-done{background:#4e342e;color:#f5e9e2}.bm-notice.is-done a{color:#f5e9e2}
+.bm-notice__tag{flex:0 0 auto;padding:.35rem .55rem;background:#d9a066;color:#4e342e;border:2px solid #4e342e;font-family:Montserrat,Arial,sans-serif;font-size:.75rem;font-weight:800;letter-spacing:.06em;line-height:1}
+.bm-notice--single{margin:1rem 0 1.25rem;font-size:.9rem}
+</style>
+    <?php
+}
+add_action('wp_head', 'refugios_bm_global_css', 30);
+
+/** Ruta /booketmania/ sin página en el administrador. */
+function refugios_bm_rewrite()
+{
+    add_rewrite_rule('^booketmania/?$', 'index.php?refugios_bm=1', 'top');
+}
+add_action('init', 'refugios_bm_rewrite');
+
+function refugios_bm_flush_once()
+{
+    $ver = 'bm-1';
+    if (get_option('refugios_bm_rewrite') !== $ver) {
+        flush_rewrite_rules(false);
+        update_option('refugios_bm_rewrite', $ver, false);
+    }
+}
+add_action('wp_loaded', 'refugios_bm_flush_once');
+
+function refugios_bm_query_var($vars)
+{
+    $vars[] = 'refugios_bm';
+    return $vars;
+}
+add_filter('query_vars', 'refugios_bm_query_var');
+
+function refugios_bm_is_page()
+{
+    return get_query_var('refugios_bm') && refugios_bm_activa();
+}
+
+function refugios_bm_template($template)
+{
+    if (!get_query_var('refugios_bm')) {
+        return $template;
+    }
+    // Fuera de fechas la página no existe: 404 y fuera de buscadores.
+    if (!refugios_bm_activa()) {
+        global $wp_query;
+        $wp_query->set_404();
+        status_header(404);
+        nocache_headers();
+        return get_404_template() ?: $template;
+    }
+    $tpl = locate_template('page-booketmania.php');
+    if ($tpl) {
+        status_header(200);
+        return $tpl;
+    }
+    return $template;
+}
+add_filter('template_include', 'refugios_bm_template', 50);
+
+/** "Comprar" con AJAX y la barra del combo al día (Woo solo los carga en tienda). */
+function refugios_bm_scripts()
+{
+    if (refugios_bm_is_page()) {
+        wp_enqueue_script('wc-add-to-cart');
+        wp_enqueue_script('wc-cart-fragments');
+    }
+}
+add_action('wp_enqueue_scripts', 'refugios_bm_scripts', 20);
+
+function refugios_bm_title($title)
+{
+    return refugios_bm_is_page() ? __('Booketmanía 3x2: Booket, Maxi Tusquets y Austral | Refugios', 'refugios') : $title;
+}
+add_filter('pre_get_document_title', 'refugios_bm_title', 99);
+add_filter('rank_math/frontend/title', 'refugios_bm_title', 99);
+
+function refugios_bm_canonical($url)
+{
+    return refugios_bm_is_page() ? home_url('/booketmania/') : $url;
+}
+add_filter('rank_math/frontend/canonical', 'refugios_bm_canonical', 99);
+
+function refugios_bm_description($desc)
+{
+    return refugios_bm_is_page()
+        ? __('Booketmanía en Refugios: lleva 3 libros de Booket, Maxi Tusquets o Austral y el de menor valor te sale gratis. Hasta el 31 de octubre.', 'refugios')
+        : $desc;
+}
+add_filter('rank_math/frontend/description', 'refugios_bm_description', 99);
+
+function refugios_bm_body_class($classes)
+{
+    if (refugios_bm_is_page()) {
+        $classes = array_diff($classes, ['home', 'blog']);
+        $classes[] = 'page';
+        $classes[] = 'bm-page-body';
+    }
+    return $classes;
+}
+add_filter('body_class', 'refugios_bm_body_class', 20);

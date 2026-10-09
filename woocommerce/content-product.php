@@ -35,6 +35,9 @@ $wa_url = 'https://wa.me/' . $clean_phone . '?text=' . rawurlencode('Hola, me in
 
     <a href="<?php echo esc_url($link); ?>" class="refugios-product-card__media" aria-hidden="true" tabindex="-1">
         <?php if ($product->is_on_sale()) { echo wp_kses_post(apply_filters('woocommerce_sale_flash', '<span class="onsale">' . esc_html__('¡Oferta!', 'refugios') . '</span>', null, $product)); } ?>
+        <?php if (function_exists('refugios_bm_sello') && refugios_bm_sello($product)): ?>
+            <span class="bm-flag" title="<?php esc_attr_e('Booketmanía: lleva 3 y el de menor valor sale gratis', 'refugios'); ?>">3x2</span>
+        <?php endif; ?>
         <?php echo $product->get_image('large'); ?>
     </a>
 

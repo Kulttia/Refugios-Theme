@@ -1,0 +1,12 @@
+{
+  "_nota": "Booketmanía de Planeta: por cada 3 libros de estos sellos, el de menor valor sale gratis. Los libros se reconocen por el atributo Sello de Woo (lo sincroniza Nodux); 'claves' se comparan sin espacios, tildes ni mayúsculas y al inicio del sello ('booket' cubre 'Booket Paidós Colombia'). Fuera de desde/hasta no hay descuento y /booketmania/ responde 404.",
+  "nombre": "Booketmanía",
+  "desde": "2026-10-01",
+  "hasta": "2026-10-31",
+  "lleva": 3,
+  "sellos": [
+    { "nombre": "Booket", "claves": ["booket"] },
+    { "nombre": "Maxi Tusquets", "claves": ["maxitusquets"] },
+    { "nombre": "Austral", "claves": ["austral"] }
+  ]
+}
