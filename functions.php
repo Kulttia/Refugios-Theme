@@ -1048,6 +1048,11 @@ function refugios_trim_cover($attachment_id)
     $h = imagesy($img);
     if ($w < 100 || $h < 100) { imagedestroy($img); return false; }
 
+    // 1000x1500 es el lienzo que arma Nodux a propósito (portada entera, sin
+    // recortar). Por color no se distingue una portada blanca de ese lienzo:
+    // "La tonalidad del pensamiento" y "La educación física" perdían el borde.
+    if ($w === 1000 && $h === 1500) { imagedestroy($img); return false; }
+
     // Buscar límites del contenido no-blanco. Algunas imágenes traen un
     // rectángulo fantasma de 1-3px cerca del borde: una línea fina seguida de
     // más blanco no es contenido, se atraviesa y se sigue buscando.
