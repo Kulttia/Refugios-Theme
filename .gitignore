@@ -3,18 +3,9 @@ node_modules/
 
 # Herramientas locales / análisis
 graphify-out/
-_patch_*.ps1
 
-# Mockups HTML de diseño (solo referencia local, no van al tema)
-carrito.html
-checkout.html
-checkout2.html
-faq.html
-libros-leidos.html
-ll.html
-m.html
-pe.html
-qs.html
+# Borradores locales: mockups HTML de diseño y scripts de parche (no van al tema)
+_borradores/
 
 # Sistema
 .DS_Store
